@@ -1,6 +1,7 @@
 from typing import Type, Callable
 
 from discord import ui, Interaction, TextStyle
+from tortoise.transactions import atomic
 
 from models import QuestionThemeLesson, QuestionProject, QuestionAnother, QuestionBase, get_user_model_by_discord_id
 
@@ -17,6 +18,7 @@ class QuestionBaseModal(ui.Modal):
 
         super().__init__()
 
+    @atomic()
     async def process_question_creation(self, interaction: Interaction, question_model: Type[QuestionBase], **kwargs):
 
         user = await get_user_model_by_discord_id(interaction.user.id)
@@ -24,6 +26,10 @@ class QuestionBaseModal(ui.Modal):
         question = await question_model.create(creator=user, **kwargs)
 
         thread = await self.init_new_forum_channel_thread(question.get_thread_name(), question.get_thread_description())
+
+        question.discord_channel_id = thread.id
+
+        await question.save(update_fields=('discord_channel_id',))
 
         await interaction.response.send_message(
             f'Ваш вопрос успешно создан, ссылка на тему: {thread.jump_url}\n'

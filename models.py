@@ -1,3 +1,5 @@
+from typing import Type
+
 from tortoise.models import Model
 from tortoise import fields
 from tortoise.exceptions import DoesNotExist
@@ -27,6 +29,7 @@ class QuestionBase(Model):
     pub_date = fields.DatetimeField(auto_now_add=True)
     context = fields.TextField(null=True)
     is_completed = fields.BooleanField(default=False)
+    discord_channel_id = fields.IntField(null=True, index=True)
 
     def get_context_short(self) -> str:
 
@@ -87,3 +90,13 @@ class QuestionAnother(QuestionBase):
 
     class Meta:
         table = 'question_another'
+
+
+async def get_question_by_discord_channel_id(discord_channel_id: int) -> Type[QuestionBase] | None:
+    for question_model in (QuestionThemeLesson, QuestionProject, QuestionAnother):
+
+        try:
+            return await question_model.get(discord_channel_id=discord_channel_id)
+
+        except DoesNotExist:
+            continue

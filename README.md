@@ -41,11 +41,14 @@ pip install -r requirements.txt
 
 ```dotenv
 BOT_TOKEN=<your_bot_token>
+HELP_FORUM_CHANNEL_ID=<your_help_forum_channel_id>
 ```
-_**Не забудьте поменять значение на своё! (поставьте его после "=")**_
+_**Не забудьте поменять значения на свои! (поставьте его после "=")**_
 
 #### Больше о переменных:
-BOT_TOKEN - API токен дискорд бота.
+BOT_TOKEN - API токен дискорд бота.<br>
+HELP_FORUM_CHANNEL_ID - id канала-форума, где бот будет работать с вопросами
+(канал должен быть типа [ForumChannel](https://discordpy.readthedocs.io/en/stable/api.html?#forumchannel)).
 
 ### 5. Запустите проект
 

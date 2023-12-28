@@ -1,48 +1,29 @@
-from typing import Any
-from logging import Logger
-from os import environ
-
-from dotenv import load_dotenv
-from discord import Client, Intents
+from discord import Intents, Message, ForumChannel, Thread
+from discord.ext.commands import Bot, context
+from tortoise import Tortoise
 
 from logging_config import get_logger
+from settings import get_settings
+from views import QuestionThemeMenuView
 
 
-class MyClient(Client):
+class CustomBot(Bot):
+    async def setup_hook(self):
 
-    def __init__(self, logger: Logger, *, intents: Intents, **options: Any):
+        await Tortoise.init(db_url='sqlite://db.sqlite3', modules={'models': ['models']})
 
-        self.logger = logger
-
-        super().__init__(intents=intents, **options)
-
-    async def on_ready(self):
-        self.logger.info(f'Logged on as {self.user}')
-
-    async def on_message(self, message):
-
-        # don't respond to ourselves
-        if message.author == self.user:
-            return
-
-        if message.content == 'ping':
-            await message.channel.send('pong')
+        await Tortoise.generate_schemas()
 
 
 def main() -> None:
 
+    # Preparation:
+
     logger = get_logger(__name__)
 
-    # Environment variables:
+    bot_settings = get_settings()
 
-    load_dotenv()
-
-    bot_token = environ.get('BOT_TOKEN')
-
-    if not bot_token:
-
-        logger.error('BOT_TOKEN environment variable not found, set it')
-
+    if not bot_settings:
         return
 
     # Setting up and launching a bot:
@@ -50,8 +31,34 @@ def main() -> None:
     intents = Intents.default()
     intents.message_content = True
 
-    client = MyClient(logger, intents=intents)
-    client.run(bot_token)
+    bot = CustomBot(command_prefix='/', intents=intents)
+
+    @bot.event
+    async def on_ready() -> None:
+        logger.info(f'Logged on as {bot.user}')
+
+    @bot.event
+    async def on_message(message: Message) -> None:
+
+        # don't respond to ourselves
+        if message.author == bot.user:
+            return
+
+        await bot.process_commands(message)
+
+    async def init_new_forum_channel_thread(name: str, content: str) -> Thread:
+
+        help_forum_channel: ForumChannel = bot.get_channel(bot_settings.HELP_FORUM_CHANNEL_ID)
+
+        thread = await help_forum_channel.create_thread(name=name, content=content)
+
+        return thread.thread
+
+    @bot.command()
+    async def new_question(ctx: context.Context) -> None:
+        await ctx.send('Выберите тип вопроса', view=QuestionThemeMenuView(init_new_forum_channel_thread))
+
+    bot.run(bot_settings.BOT_TOKEN)
 
 
 if __name__ == '__main__':

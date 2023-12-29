@@ -1,15 +1,16 @@
-from typing import Callable
-
 from discord import ui, SelectOption, Interaction
+from discord.ext.commands import Bot
 
 from modals import QuestionThemeLessonModal, QuestionProjectModal, QuestionAnotherModal
+from settings import Settings
 
 
 class QuestionThemeMenuView(ui.View):
 
-    def __init__(self, init_new_forum_channel_thread: Callable):
+    def __init__(self, bot: Bot, bot_settings: Settings):
 
-        self.init_new_forum_channel_thread = init_new_forum_channel_thread
+        self.bot = bot
+        self.bot_settings = bot_settings
 
         super().__init__()
 
@@ -41,13 +42,13 @@ class QuestionThemeMenuView(ui.View):
         selected_value = select.values[0]
 
         if selected_value == 'theme_lesson':
-            return_modal = QuestionThemeLessonModal(self.init_new_forum_channel_thread)
+            return_modal = QuestionThemeLessonModal(self.bot, self.bot_settings)
 
         elif selected_value == 'project':
-            return_modal = QuestionProjectModal(self.init_new_forum_channel_thread)
+            return_modal = QuestionProjectModal(self.bot, self.bot_settings)
 
         elif selected_value == 'another':
-            return_modal = QuestionAnotherModal(self.init_new_forum_channel_thread)
+            return_modal = QuestionAnotherModal(self.bot, self.bot_settings)
 
         else:
 

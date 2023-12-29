@@ -1,4 +1,4 @@
-from discord import Intents, Message, ForumChannel, Thread
+from discord import Intents, Message
 from discord.ext.commands import Bot, context
 from tortoise import Tortoise
 
@@ -47,17 +47,9 @@ def main() -> None:
 
         await bot.process_commands(message)
 
-    async def init_new_forum_channel_thread(name: str, content: str) -> Thread:
-
-        help_forum_channel: ForumChannel = bot.get_channel(bot_settings.HELP_FORUM_CHANNEL_ID)
-
-        thread = await help_forum_channel.create_thread(name=name, content=content)
-
-        return thread.thread
-
     @bot.command()
     async def new_question(ctx: context.Context) -> None:
-        await ctx.send('Выберите тип вопроса', view=QuestionThemeMenuView(init_new_forum_channel_thread))
+        await ctx.send('Выберите тип вопроса', view=QuestionThemeMenuView(bot, bot_settings))
 
     @bot.command()
     async def complete_current_question(ctx: context.Context) -> None:

@@ -4,6 +4,7 @@ from discord import ui, Interaction, TextStyle
 from tortoise.transactions import atomic
 
 from models import QuestionThemeLesson, QuestionProject, QuestionAnother, QuestionBase, get_user_model_by_discord_id
+from settings import Settings
 
 
 class QuestionBaseModal(ui.Modal):
@@ -12,11 +13,20 @@ class QuestionBaseModal(ui.Modal):
         label='Описание проблемы', placeholder='опишите вашу проблему', min_length=10, style=TextStyle.long, row=4
     )
 
-    def __init__(self, init_new_forum_channel_thread: Callable):
+    def __init__(self, bot: Bot, bot_settings: Settings):
 
-        self.init_new_forum_channel_thread = init_new_forum_channel_thread
+        self.bot = bot
+        self.bot_settings = bot_settings
 
         super().__init__()
+
+    async def init_new_forum_channel_thread(self, name: str, content: str) -> Thread:
+
+        help_forum_channel: ForumChannel = self.bot.get_channel(self.bot_settings.HELP_FORUM_CHANNEL_ID)
+
+        thread = await help_forum_channel.create_thread(name=name, content=content)
+
+        return thread.thread
 
     @atomic()
     async def process_question_creation(self, interaction: Interaction, question_model: Type[QuestionBase], **kwargs):

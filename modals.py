@@ -158,8 +158,8 @@ class QuestionThemeLessonModal(QuestionBaseModal, title='Вопрос по те�
     )
 
     @staticmethod
-    async def get_questions(is_completed: bool, theme: str, lesson: str) -> QuerySet[QuestionThemeLesson]:
-        return QuestionThemeLesson.filter(is_completed=is_completed, theme=theme, lesson=lesson)
+    async def get_questions(is_completed: bool, theme: str, lesson: str) -> list[QuestionThemeLesson]:
+        return await QuestionThemeLesson.filter(is_completed=is_completed, theme=theme, lesson=lesson)
 
     async def on_submit(self, interaction: Interaction) -> None:
 

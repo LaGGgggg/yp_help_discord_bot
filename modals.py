@@ -1,7 +1,10 @@
-from typing import Type, Callable
+from typing import Type, Callable, Any
 
-from discord import ui, Interaction, TextStyle
+from discord import ui, Interaction, TextStyle, ForumChannel, Thread, Embed, ButtonStyle
+from discord.ext.commands import Bot
 from tortoise.transactions import atomic
+from tortoise.queryset import QuerySet
+from thefuzz.fuzz import partial_ratio
 
 from models import QuestionThemeLesson, QuestionProject, QuestionAnother, QuestionBase, get_user_model_by_discord_id
 from settings import Settings
@@ -46,13 +49,104 @@ class QuestionBaseModal(ui.Modal):
             'Вы можете отсылать сообщения в тему анонимно через бота'
         )
 
+    async def process_user_question(
+            self,
+            interaction: Interaction,
+            question_model: Type[QuestionBase],
+            get_questions_function: Callable,
+            get_questions_kwargs: dict[str, Any],
+            create_question_kwargs: dict[str, Any],
+            is_completed: bool = True,
+    ) -> None:
+        """
+        Processes the user's question in the format:
+        show all similar completed questions (retrieved from get_questions_function) ->
+        show all similar unfinished questions -> create a new question.
+        (if there are no completed/incomplete questions, skip this part)
+        get_questions_function (async) must take a boolean argument (is_completed) that indicates whether the questions
+        are complete and kwargs.
+        """
+
+        questions = await get_questions_function(is_completed=is_completed, **get_questions_kwargs)
+
+        if questions:
+
+            message = f"Вот список похожих {'' if is_completed else 'не'}решённых вопросов:\n"
+
+            for question in questions:
+
+                question_channel = self.bot.get_channel(question.discord_channel_id)
+
+                message += f'[{question.get_thread_name()}]({question_channel.jump_url})\n'
+
+            message_comment_template = 'Если вы не нашли ответ на свой вопрос, то можете '
+
+            if is_completed:
+                message += message_comment_template + 'посмотреть похожие, ещё не решённые вопросы'
+
+            else:
+                message += message_comment_template + 'создать новый вопрос'
+
+        else:
+            message = 'Не удалось найти похожие вопросы, вы можете создать новый'
+
+        embed_message = Embed(description=message)
+
+        next_button_view = ui.View()
+
+        if is_completed and not questions:
+
+            await self.process_user_question(
+                interaction,
+                question_model,
+                get_questions_function,
+                get_questions_kwargs,
+                create_question_kwargs,
+                is_completed=False,
+            )
+
+            return
+
+        elif is_completed:
+
+            next_button_view.add_item(ui.Button(label='Посмотреть нерешённые вопросы', style=ButtonStyle.primary))
+
+            async def view_incomplete_questions_callback(callback_interaction: Interaction) -> None:
+                await self.process_user_question(
+                    callback_interaction,
+                    question_model,
+                    get_questions_function,
+                    get_questions_kwargs,
+                    create_question_kwargs,
+                    is_completed=False,
+                )
+
+            next_button_view.children[0].callback = view_incomplete_questions_callback
+
+        else:
+
+            next_button_view.add_item(ui.Button(label='Создать новый вопрос', style=ButtonStyle.primary))
+
+            async def create_question_callback(callback_interaction: Interaction) -> None:
+                await self.process_question_creation(callback_interaction, question_model, **create_question_kwargs)
+
+            next_button_view.children[0].callback = create_question_callback
+
+        await interaction.response.send_message(embed=embed_message, view=next_button_view)
+
 
 class QuestionThemeLessonModal(QuestionBaseModal, title='Вопрос по теме и уроку'):
 
-    theme = ui.TextInput(label='Тема', placeholder='введите номер темы числом', min_length=1, max_length=3,
-                         style=TextStyle.short)
-    lesson = ui.TextInput(label='Урок', placeholder='введите номер урока числом', min_length=1, max_length=3,
-                          style=TextStyle.short)
+    theme = ui.TextInput(
+        label='Тема', placeholder='введите номер темы числом', min_length=1, max_length=3, style=TextStyle.short
+    )
+    lesson = ui.TextInput(
+        label='Урок', placeholder='введите номер урока числом', min_length=1, max_length=3, style=TextStyle.short
+    )
+
+    @staticmethod
+    async def get_questions(is_completed: bool, theme: str, lesson: str) -> QuerySet[QuestionThemeLesson]:
+        return QuestionThemeLesson.filter(is_completed=is_completed, theme=theme, lesson=lesson)
 
     async def on_submit(self, interaction: Interaction) -> None:
 
@@ -60,8 +154,18 @@ class QuestionThemeLessonModal(QuestionBaseModal, title='Вопрос по те�
         lesson = self.lesson.value
 
         if theme.isnumeric() and lesson.isnumeric():
-            await self.process_question_creation(
-                interaction, QuestionThemeLesson, theme=theme, lesson=lesson, context=self.context.value
+
+            search_question_kwargs = {
+                'theme': theme,
+                'lesson': lesson,
+            }
+
+            await self.process_user_question(
+                interaction,
+                QuestionThemeLesson,
+                self.get_questions,
+                search_question_kwargs,
+                {'context': self.context.value, **search_question_kwargs},
             )
 
         else:
@@ -80,18 +184,59 @@ class QuestionProjectModal(QuestionBaseModal, title='Вопрос по прое�
         style=TextStyle.short,
     )
 
+    @staticmethod
+    async def get_questions(is_completed: bool, project_name: str) -> list[QuestionProject]:
+
+        result = []
+
+        async for question in QuestionProject.filter(is_completed=is_completed):
+
+            question_ratio = partial_ratio(project_name, question.project_name)
+
+            if question_ratio >= 70:
+                result.append((question, question_ratio))
+
+        # example: [[999, -32], [23, 99], [0, 0], [1, 23]] -> [23, 1, 0, 999]
+        return [i[0] for i in sorted(result, key=lambda x: x[1], reverse=True)]
+
     async def on_submit(self, interaction: Interaction) -> None:
 
-        await self.process_question_creation(
-            interaction, QuestionProject, project_name=self.project_name, context=self.context.value
+        search_question_kwargs = {'project_name': self.project_name.value}
+
+        await self.process_user_question(
+            interaction,
+            QuestionProject,
+            self.get_questions,
+            search_question_kwargs,
+            {'context': self.context.value, **search_question_kwargs},
         )
 
         await super().on_submit(interaction)
 
 
 class QuestionAnotherModal(QuestionBaseModal, title='Вопрос по "другому"'):
+
+    @staticmethod
+    async def get_questions(is_completed: bool, context: str) -> list[QuestionAnother]:
+
+        result = []
+
+        async for question in QuestionAnother.filter(is_completed=is_completed):
+
+            question_ratio = partial_ratio(context, question.context)
+
+            if question_ratio >= 60:
+                result.append((question, question_ratio))
+
+        # example: [[999, -32], [23, 99], [0, 0], [1, 23]] -> [23, 1, 0, 999]
+        return [i[0] for i in sorted(result, key=lambda x: x[1], reverse=True)]
+
     async def on_submit(self, interaction: Interaction) -> None:
 
-        await self.process_question_creation(interaction, QuestionAnother, context=self.context.value)
+        question_kwargs = {'context': self.context.value}
+
+        await self.process_user_question(
+            interaction, QuestionAnother, self.get_questions, question_kwargs, question_kwargs
+        )
 
         await super().on_submit(interaction)

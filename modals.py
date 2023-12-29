@@ -4,6 +4,7 @@ from discord import ui, Interaction, TextStyle, ForumChannel, Thread, Embed, But
 from discord.ext.commands import Bot
 from tortoise.transactions import atomic
 from tortoise.queryset import QuerySet
+from tortoise.exceptions import DoesNotExist
 from thefuzz.fuzz import partial_ratio
 
 from models import QuestionThemeLesson, QuestionProject, QuestionAnother, QuestionBase, get_user_model_by_discord_id
@@ -35,6 +36,18 @@ class QuestionBaseModal(ui.Modal):
     async def process_question_creation(self, interaction: Interaction, question_model: Type[QuestionBase], **kwargs):
 
         user = await get_user_model_by_discord_id(interaction.user.id)
+
+        # uniqueness check
+        try:
+
+            await question_model.get(**kwargs)
+
+            await interaction.response.send_message('Не удалось создать вопрос, такой же уже существует')
+
+            return
+
+        except DoesNotExist:
+            pass
 
         question = await question_model.create(creator=user, **kwargs)
 

@@ -11,6 +11,7 @@ class Settings:
 
     BOT_TOKEN: str
     HELP_FORUM_CHANNEL_ID: int
+    DB_URL: str
 
 
 def get_settings() -> Settings | None:

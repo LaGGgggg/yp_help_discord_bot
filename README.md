@@ -42,6 +42,7 @@ pip install -r requirements.txt
 ```dotenv
 BOT_TOKEN=<your_bot_token>
 HELP_FORUM_CHANNEL_ID=<your_help_forum_channel_id>
+DB_URL=sqlite://db.sqlite3  # вы можете оставить значение по умолчанию
 ```
 _**Не забудьте поменять значения на свои! (поставьте его после "=")**_
 
@@ -49,6 +50,8 @@ _**Не забудьте поменять значения на свои! (по�
 BOT_TOKEN - API токен дискорд бота.<br>
 HELP_FORUM_CHANNEL_ID - id канала-форума, где бот будет работать с вопросами
 (канал должен быть типа [ForumChannel](https://discordpy.readthedocs.io/en/stable/api.html?#forumchannel)).
+(канал должен быть типа [ForumChannel](https://discordpy.readthedocs.io/en/stable/api.html?#forumchannel)).<br>
+DB_URL - обычный [url базы данных](https://tortoise.github.io/databases.html#db-url).<br>
 
 ### 5. Запустите проект
 

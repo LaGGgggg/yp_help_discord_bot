@@ -3,15 +3,22 @@ from discord.ext.commands import Bot, context
 from tortoise import Tortoise
 
 from logging_config import get_logger
-from settings import get_settings
+from settings import get_settings, Settings
 from views import QuestionThemeMenuView
 from models import get_question_by_discord_channel_id
 
 
 class CustomBot(Bot):
+
+    def __init__(self, bot_settings: Settings, *args, **kwargs) -> None:
+
+        self.bot_settings = bot_settings
+
+        super().__init__(*args, **kwargs)
+
     async def setup_hook(self):
 
-        await Tortoise.init(db_url='sqlite://db.sqlite3', modules={'models': ['models']})
+        await Tortoise.init(db_url=self.bot_settings.DB_URL, modules={'models': ['models']})
 
         await Tortoise.generate_schemas()
 
@@ -32,7 +39,7 @@ def main() -> None:
     intents = Intents.default()
     intents.message_content = True
 
-    bot = CustomBot(command_prefix='/', intents=intents)
+    bot = CustomBot(bot_settings=bot_settings, command_prefix='/', intents=intents)
 
     @bot.event
     async def on_ready() -> None:

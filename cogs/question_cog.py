@@ -1,6 +1,6 @@
 from typing import Type
 
-from discord.ext.commands import Cog, command
+from discord.ext.commands import Cog, hybrid_command
 from discord.ext.commands.context import Context
 
 from cogs._cog_base import CogBase
@@ -10,11 +10,11 @@ from models import get_question_by_discord_channel_id
 
 class QuestionCog(CogBase):
 
-    @command()
+    @hybrid_command(description='Создание нового вопроса')
     async def new_question(self, ctx: Context) -> None:
         await ctx.send('Выберите тип вопроса', view=QuestionThemeMenuView(self.bot, self.bot_settings))
 
-    @command()
+    @hybrid_command(description='Отмечает текущий вопрос как решённый')
     async def complete_current_question(self, ctx: Context) -> None:
 
         question = await get_question_by_discord_channel_id(ctx.channel.id)

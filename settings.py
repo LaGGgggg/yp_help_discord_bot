@@ -13,6 +13,7 @@ class Settings:
     HELP_FORUM_CHANNEL_ID: int
     DB_URL: str
     COGS_DIR_NAME: str
+    SUPERUSERS_IDS: list[int]
 
 
 def get_settings() -> Settings | None:
@@ -40,6 +41,10 @@ def get_settings() -> Settings | None:
 
             elif env_var_type is int:
                 env_var_value = int(env_var_value)
+
+            # This works, "is" - not. list[int] == list[int] -> True; list[str] == list[int] -> False
+            elif env_var_type == list[int]:
+                env_var_value = [int(i) for i in env_var_value.split(',')]
 
             else:
 

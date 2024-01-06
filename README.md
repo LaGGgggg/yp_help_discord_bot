@@ -44,6 +44,7 @@ BOT_TOKEN=<your_bot_token>
 HELP_FORUM_CHANNEL_ID=<your_help_forum_channel_id>
 DB_URL=sqlite://db.sqlite3  # вы можете оставить значение по умолчанию
 COGS_DIR_NAME=cogs  # вы можете оставить значение по умолчанию
+SUPERUSERS_IDS=<your_superusers_ids>  # id следует разделять ",", например: "111,222" или "333"
 ```
 _**Не забудьте поменять значения на свои! (поставьте его после "=")**_
 
@@ -55,6 +56,8 @@ DB_URL - обычный [url базы данных](https://tortoise.github.io/d
 COGS_DIR_NAME - название директории, в которой находятся файлы с
 [cog-ами](https://discordpy.readthedocs.io/en/stable/ext/commands/cogs.html)
 (файлы с отличным от ".py" расширением и начинающиеся с "_" игнорируются).<br>
+SUPERUSERS_IDS - discord ids суперпользователей (пользователей бота с расширенными правами,
+каждый id отделяется от другого при помощи ",", например: "SUPERUSERS_IDS=111,222" или "SUPERUSERS_IDS=333").<br>
 
 ### 5. Запустите проект
 

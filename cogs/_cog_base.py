@@ -16,4 +16,4 @@ class CogBase(Cog):
 
     @Cog.listener()
     async def on_ready(self) -> None:
-        self.logger.info(f'Cog logged on as {self.bot.user}')
+        self.logger.info(f'Cog ({self.__cog_name__}) logged on as {self.bot.user}')

@@ -3,7 +3,6 @@ from typing import Type, Callable, Any
 from discord import ui, Interaction, TextStyle, ForumChannel, Thread, Embed, ButtonStyle
 from discord.ext.commands import Bot
 from tortoise.transactions import atomic
-from tortoise.queryset import QuerySet
 from tortoise.exceptions import DoesNotExist
 from thefuzz.fuzz import partial_ratio
 

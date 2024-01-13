@@ -252,3 +252,26 @@ class QuestionAnotherModal(QuestionBaseModal, title='Вопрос по "друг
         )
 
         await super().on_submit(interaction)
+
+
+class SendAnonymousMessageModal(ui.Modal, title='Отправить анонимное сообщение'):
+
+    message = ui.TextInput(
+        label='Текст сообщения', placeholder='введите ваше сообщение', min_length=5, style=TextStyle.long
+    )
+
+    def __init__(self, bot: Bot, bot_settings: Settings, target_thread: Thread):
+
+        self.bot = bot
+        self.bot_settings = bot_settings
+        self.target_thread = target_thread
+
+        super().__init__()
+
+    async def on_submit(self, interaction: Interaction) -> None:
+
+        sent_message = await self.target_thread.send(f'Автор вопроса написал:\n{self.message.value}')
+
+        await interaction.response.send_message(f'[Сообщение]({sent_message.jump_url}) успешно отправлено')
+
+        await super().on_submit(interaction)

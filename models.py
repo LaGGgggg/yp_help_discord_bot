@@ -35,7 +35,7 @@ class QuestionBase(Model):
     pub_date = fields.DatetimeField(auto_now_add=True)
     context = fields.TextField(null=True)
     is_completed = fields.BooleanField(default=False)
-    discord_channel_id = fields.IntField(null=True, index=True)
+    discord_channel_id = fields.IntField(null=True, index=True, unique=True)
 
     def get_context_short(self) -> str:
 
@@ -123,3 +123,20 @@ async def get_all_questions(**filter_kwargs) -> list[QuestionThemeLesson | Quest
     result.extend(await QuestionAnother.filter(**filter_kwargs))
 
     return result
+
+
+class QuestionStatistics(Model):
+
+    id = fields.IntField(pk=True)
+    pub_date = fields.DatetimeField(auto_now_add=True)
+    discord_channel_id = fields.IntField(index=True, unique=True)
+    requests = fields.IntField(default=1)
+
+    async def get_question_object(self) -> Type[QuestionBase]:
+        return await get_question_by_discord_channel_id(self.discord_channel_id)
+
+    def __str__(self) -> str:
+        return f'Question statistics requests: {self.requests} discord_channel_id: {self.discord_channel_id}'
+
+    class Meta:
+        table = 'question_statistics'

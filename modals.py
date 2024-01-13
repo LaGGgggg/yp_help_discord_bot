@@ -3,11 +3,17 @@ from typing import Type, Callable, Any
 from discord import ui, Interaction, TextStyle, ForumChannel, Thread, Embed, ButtonStyle
 from discord.ext.commands import Bot
 from tortoise.transactions import atomic
-from tortoise.queryset import QuerySet
 from tortoise.exceptions import DoesNotExist
 from thefuzz.fuzz import partial_ratio
 
-from models import QuestionThemeLesson, QuestionProject, QuestionAnother, QuestionBase, get_user_model_by_discord_id
+from models import (
+    QuestionThemeLesson,
+    QuestionProject,
+    QuestionAnother,
+    QuestionBase,
+    QuestionStatistics,
+    get_user_model_by_discord_id,
+)
 from settings import Settings
 
 
@@ -57,6 +63,8 @@ class QuestionBaseModal(ui.Modal):
 
         await question.save(update_fields=('discord_channel_id',))
 
+        await QuestionStatistics.create(discord_channel_id=question.discord_channel_id)
+
         await interaction.response.send_message(
             f'Ваш вопрос успешно создан, ссылка на тему: {thread.jump_url}\n'
             'Вы можете отсылать сообщения в тему анонимно через бота'
@@ -91,6 +99,12 @@ class QuestionBaseModal(ui.Modal):
                 question_channel = self.bot.get_channel(question.discord_channel_id)
 
                 message += f'[{question.get_thread_name()}]({question_channel.jump_url})\n'
+
+                question_statistics = await QuestionStatistics.get(discord_channel_id=question.discord_channel_id)
+
+                question_statistics.requests += 1
+
+                await question_statistics.save()
 
             message_comment_template = 'Если вы не нашли ответ на свой вопрос, то можете '
 
@@ -251,5 +265,28 @@ class QuestionAnotherModal(QuestionBaseModal, title='Вопрос по "друг
         await self.process_user_question(
             interaction, QuestionAnother, self.get_questions, question_kwargs, question_kwargs
         )
+
+        await super().on_submit(interaction)
+
+
+class SendAnonymousMessageModal(ui.Modal, title='Отправить анонимное сообщение'):
+
+    message = ui.TextInput(
+        label='Текст сообщения', placeholder='введите ваше сообщение', min_length=5, style=TextStyle.long
+    )
+
+    def __init__(self, bot: Bot, bot_settings: Settings, target_thread: Thread):
+
+        self.bot = bot
+        self.bot_settings = bot_settings
+        self.target_thread = target_thread
+
+        super().__init__()
+
+    async def on_submit(self, interaction: Interaction) -> None:
+
+        sent_message = await self.target_thread.send(f'Автор вопроса написал:\n{self.message.value}')
+
+        await interaction.response.send_message(f'[Сообщение]({sent_message.jump_url}) успешно отправлено')
 
         await super().on_submit(interaction)

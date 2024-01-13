@@ -13,6 +13,10 @@ class QuestionCog(CogBase):
 
     @hybrid_command(description='Создание нового вопроса')
     async def new_question(self, ctx: Context) -> None:
+
+        if not await self.check_is_private_channel(ctx):
+            return
+
         await ctx.send('Выберите тип вопроса', view=QuestionThemeMenuView(self.bot, self.bot_settings))
 
     @hybrid_command(description='Отмечает текущий вопрос как решённый')
@@ -42,6 +46,9 @@ class QuestionCog(CogBase):
 
     @hybrid_command(description='Отправляет анонимное сообщение')
     async def send_anonymous_message(self, ctx: Context) -> None:
+
+        if not await self.check_is_private_channel(ctx):
+            return
 
         view = SendAnonymousMessageView(self.bot, self.bot_settings)
 

@@ -11,6 +11,9 @@ class MainCog(CogBase):
     @command()
     async def sync(self, ctx: Context) -> None:
 
+        if not await self.check_is_private_channel(ctx):
+            return
+
         if ctx.author.id in self.bot_settings.SUPERUSERS_IDS:
 
             try:

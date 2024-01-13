@@ -31,3 +31,14 @@ class CogBase(Cog):
 
         else:
             return True
+
+    async def check_is_superuser(self, ctx: Context) -> bool:
+
+        if ctx.author.id in self.bot_settings.SUPERUSERS_IDS:
+            return True
+
+        else:
+
+            await ctx.send('У вас нет прав для выполнения этой команды')
+
+            return False

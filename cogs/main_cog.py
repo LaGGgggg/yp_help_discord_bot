@@ -14,29 +14,27 @@ class MainCog(CogBase):
         if not await self.check_is_private_channel(ctx):
             return
 
-        if ctx.author.id in self.bot_settings.SUPERUSERS_IDS:
+        if not await self.check_is_superuser(ctx):
+            return
 
-            try:
-                await self.bot.tree.sync()
+        try:
+            await self.bot.tree.sync()
 
-            except (HTTPException, Forbidden) as e:
+        except (HTTPException, Forbidden) as e:
 
-                self.logger.warning(f'An error occurred while command tree syncing: "{e}"')
+            self.logger.warning(f'An error occurred while command tree syncing: "{e}"')
 
-                await ctx.send(
-                    'Не удалось синхронизировать дерево команд, попробуйте ещё раз или обратитесь в поддержку'
-                )
-
-            else:
-
-                self.logger.info('Command tree synced')
-
-                await ctx.send(
-                    'Дерево команд синхронизированно, до появления видимого эффекта может пройти некоторое время'
-                )
+            await ctx.send(
+                'Не удалось синхронизировать дерево команд, попробуйте ещё раз или обратитесь в поддержку'
+            )
 
         else:
-            await ctx.send('У вас нет прав для выполнения этой команды')
+
+            self.logger.info('Command tree synced')
+
+            await ctx.send(
+                'Дерево команд синхронизированно, до появления видимого эффекта может пройти некоторое время'
+            )
 
 
 async def get_cog() -> Type[Cog]:

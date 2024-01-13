@@ -5,7 +5,7 @@ from discord.ext.commands import Cog, hybrid_command
 from discord.ext.commands.context import Context
 
 from cogs._cog_base import CogBase
-from views import QuestionThemeMenuView
+from views import QuestionThemeMenuView, SendAnonymousMessageView
 from models import get_question_by_discord_channel_id
 
 
@@ -39,6 +39,19 @@ class QuestionCog(CogBase):
         await ctx.channel.edit(name=f'[РЕШЕНО] {ctx.channel.name}')
 
         await ctx.send('Вопрос помечен как решённый')
+
+    @hybrid_command(description='Отправляет анонимное сообщение')
+    async def send_anonymous_message(self, ctx: Context) -> None:
+
+        view = SendAnonymousMessageView(self.bot, self.bot_settings)
+
+        view_add_select_ui_result = await view.add_select_ui(ctx.author.id)
+
+        if view_add_select_ui_result is not True:
+            await ctx.send(view_add_select_ui_result)
+
+        else:
+            await ctx.send('Выбирайте вопрос и отправляйте сообщение', view=view)
 
     @Cog.listener()
     async def on_message(self, message: Message) -> None:

@@ -24,6 +24,12 @@ async def get_user_model_by_discord_id(discord_id: int) -> User:
 
 
 class QuestionBase(Model):
+    """
+    All subclasses must include:
+    creator = fields.ForeignKeyField('models.User', related_name='<related_name>')
+    QUESTION_TYPE = '<question_type>'
+    sync function: get_thread_name(self) -> str
+    """
 
     id = fields.IntField(pk=True)
     pub_date = fields.DatetimeField(auto_now_add=True)
@@ -53,6 +59,8 @@ class QuestionThemeLesson(QuestionBase):
     theme = fields.SmallIntField()
     lesson = fields.SmallIntField()
 
+    QUESTION_TYPE = 'theme_lesson'
+
     def get_thread_name(self) -> str:
         return f'#{self.theme} тема #{self.lesson} урок, {self.get_context_short()}'
 
@@ -68,6 +76,8 @@ class QuestionProject(QuestionBase):
     creator = fields.ForeignKeyField('models.User', related_name='project_questions')
     project_name = fields.CharField(max_length=127)
 
+    QUESTION_TYPE = 'project'
+
     def get_thread_name(self) -> str:
         return f'#{self.project_name} проект, {self.get_context_short()}'
 
@@ -81,6 +91,8 @@ class QuestionProject(QuestionBase):
 class QuestionAnother(QuestionBase):
 
     creator = fields.ForeignKeyField('models.User', related_name='another_questions')
+
+    QUESTION_TYPE = 'another'
 
     def get_thread_name(self) -> str:
         return f'#другое, {self.get_context_short()}'
@@ -100,3 +112,14 @@ async def get_question_by_discord_channel_id(discord_channel_id: int) -> Type[Qu
 
         except DoesNotExist:
             continue
+
+
+async def get_all_questions(**filter_kwargs) -> list[QuestionThemeLesson | QuestionProject | QuestionAnother]:
+
+    result = []
+
+    result.extend(await QuestionThemeLesson.filter(**filter_kwargs))
+    result.extend(await QuestionProject.filter(**filter_kwargs))
+    result.extend(await QuestionAnother.filter(**filter_kwargs))
+
+    return result

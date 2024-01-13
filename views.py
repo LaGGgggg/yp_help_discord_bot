@@ -45,13 +45,19 @@ class QuestionThemeMenuView(ui.View):
         selected_value = select.values[0]
 
         if selected_value == 'theme_lesson':
+
             return_modal = QuestionThemeLessonModal(self.bot, self.bot_settings)
+            selected_value_formatted = 'тема и урок'
 
         elif selected_value == 'project':
+
             return_modal = QuestionProjectModal(self.bot, self.bot_settings)
+            selected_value_formatted = 'проект'
 
         elif selected_value == 'another':
+
             return_modal = QuestionAnotherModal(self.bot, self.bot_settings)
+            selected_value_formatted = 'другое'
 
         else:
 
@@ -61,9 +67,21 @@ class QuestionThemeMenuView(ui.View):
                 'Произошла ошибка, пожалуйста, попробуйте ещё раз или свяжитесь с поддержкой'
             )
 
+            await interaction.followup.edit_message(
+                interaction.message.id,
+                content='Произошла ошибка при выборе',
+                view=None,
+            )
+
             return
 
         await interaction.response.send_modal(return_modal)
+
+        await interaction.followup.edit_message(
+            interaction.message.id,
+            content=f'Выбран тип: {selected_value_formatted}',
+            view=None,
+        )
 
 
 class SendAnonymousMessageView(ui.View):

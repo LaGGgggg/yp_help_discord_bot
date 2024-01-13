@@ -6,7 +6,14 @@ from tortoise.transactions import atomic
 from tortoise.exceptions import DoesNotExist
 from thefuzz.fuzz import partial_ratio
 
-from models import QuestionThemeLesson, QuestionProject, QuestionAnother, QuestionBase, get_user_model_by_discord_id
+from models import (
+    QuestionThemeLesson,
+    QuestionProject,
+    QuestionAnother,
+    QuestionBase,
+    QuestionStatistics,
+    get_user_model_by_discord_id,
+)
 from settings import Settings
 
 
@@ -56,6 +63,8 @@ class QuestionBaseModal(ui.Modal):
 
         await question.save(update_fields=('discord_channel_id',))
 
+        await QuestionStatistics.create(discord_channel_id=question.discord_channel_id)
+
         await interaction.response.send_message(
             f'Ваш вопрос успешно создан, ссылка на тему: {thread.jump_url}\n'
             'Вы можете отсылать сообщения в тему анонимно через бота'
@@ -90,6 +99,12 @@ class QuestionBaseModal(ui.Modal):
                 question_channel = self.bot.get_channel(question.discord_channel_id)
 
                 message += f'[{question.get_thread_name()}]({question_channel.jump_url})\n'
+
+                question_statistics = await QuestionStatistics.get(discord_channel_id=question.discord_channel_id)
+
+                question_statistics.requests += 1
+
+                await question_statistics.save()
 
             message_comment_template = 'Если вы не нашли ответ на свой вопрос, то можете '
 

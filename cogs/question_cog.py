@@ -6,11 +6,11 @@ from discord.ext.commands.context import Context
 
 from cogs._cog_base import CogBase
 from views import QuestionThemeMenuView, SendAnonymousMessageView
-from models import get_question_by_discord_channel_id, get_all_questions, QuestionStatistics
+from models import get_question_by_discord_channel_id, get_all_questions, QuestionStatistics # TODO get_all_questions не используется
 
 
 class QuestionCog(CogBase):
-
+    # TODO Не уверен что нам нужны гибридные команды, но реализация зависит в итоге от вас
     @hybrid_command(description='Создание нового вопроса')
     async def new_question(self, ctx: Context) -> None:
 
@@ -21,9 +21,9 @@ class QuestionCog(CogBase):
 
     @hybrid_command(description='Отмечает текущий вопрос как решённый')
     async def complete_current_question(self, ctx: Context) -> None:
-
+        # TODO думаю не очень хорошая идея позволять закрывать вопросы кому угодно, пусть это может сделать автор либо админ состав
         question = await get_question_by_discord_channel_id(ctx.channel.id)
-
+        
         if not question:
 
             await ctx.send('Вопрос не найден, убедитесь, что пишите эту команду в ветке с вопросом')
@@ -56,10 +56,10 @@ class QuestionCog(CogBase):
 
         if view_add_select_ui_result is not True:
             await ctx.send(view_add_select_ui_result)
-
+            # TODO опять же, добавляем return и убираем else
         else:
             await ctx.send('Выбирайте вопрос и отправляйте сообщение', view=view)
-
+    # TODO Стоило вынести стату всю в отдельную когу
     @command(description='Просмотреть статистику бота')
     async def get_bot_statistics(self, ctx: Context) -> None:
 
@@ -72,7 +72,7 @@ class QuestionCog(CogBase):
         questions_statistics = await QuestionStatistics.filter(requests__gt=10).order_by('-requests')
 
         if questions_statistics:
-
+            # TODO Вообще думаю можно было бы считать стату по именно номеру урока, но согласен, крайне туманные пожелания у нас вышли
             message = 'Вот список самых популярных (по запросам в боте) вопросов:\n'
 
             for question_statistics in questions_statistics:

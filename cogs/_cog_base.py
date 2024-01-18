@@ -29,7 +29,7 @@ class CogBase(Cog):
 
             return False
 
-        else:
+        else: # TODO Опять же, можно убрать else и вынести второй ретурн на один уровень вложенности выше
             return True
 
     async def check_is_superuser(self, ctx: Context) -> bool:
@@ -37,7 +37,7 @@ class CogBase(Cog):
         if ctx.author.id in self.bot_settings.SUPERUSERS_IDS:
             return True
 
-        else:
+        else: # TODO Аналогично с 32ой
 
             await ctx.send('У вас нет прав для выполнения этой команды')
 

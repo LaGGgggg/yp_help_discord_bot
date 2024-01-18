@@ -27,7 +27,7 @@ class CustomBot(Bot):
         for file_name in listdir(self.bot_settings.COGS_DIR_NAME):
 
             # skip all non-python files and supporting files (starts with "_")
-            if '.py' not in file_name or file_name[0] == '_':
+            if '.py' not in file_name or file_name[0] == '_': # TODO Можно было еще использовать .startwith()
 
                 self.logger.info(f'Non-cog file found, skip it: "{file_name}"')
 
@@ -42,15 +42,16 @@ class CustomBot(Bot):
                 cog_class = await cog_module.get_cog()
 
                 await self.add_cog(cog_class(self, get_logger, self.bot_settings))
-
-            except Exception as e:
+            # TODO вообще лучше не жрать все ошибки, вы конечно пишете их в логгер, но это энивей не панацея, если присутствует какая-то неизвестная ошибка,
+            # при которой бот должен падать еще НА ЗАПУСКЕ, то пусть падает и разраб чинит все это
+            except Exception as e: 
                 self.logger.error(f'An error occurred while cog adding: {e}')
 
             else:
                 self.logger.info(f'Cog file adding completed successfully')
 
 
-def main() -> None:
+def main() -> None: # TODO Вообще есть несколько лагерей, и я считаю что лучше не прописывать None типизацию, так как это по дефолту так
 
     # Preparation:
 

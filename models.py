@@ -13,13 +13,13 @@ class User(Model):
     def __str__(self) -> str:
         return f'Bot user (id: {self.id}, discord_id: {self.discord_id})'
 
-
+# TODO Я бы вынес всю логику с базой в отдельный файл, в моделях обычно лежит только само описание данных
 async def get_user_model_by_discord_id(discord_id: int) -> User:
 
     try:
-        return await User.get(discord_id=discord_id)
+        return await User.get(discord_id=discord_id) 
 
-    except DoesNotExist:
+    except DoesNotExist: # TODO Больше вопрос чем замечание, никогда не работал с черепашкой. У нее нет встроенной возможности создать если не существует?
         return await User.create(discord_id=discord_id)
 
 
@@ -111,13 +111,14 @@ async def get_question_by_discord_channel_id(discord_channel_id: int) -> Type[Qu
             return await question_model.get(discord_channel_id=discord_channel_id)
 
         except DoesNotExist:
-            continue
+            continue # TODO Вот тут будто лучше бы логировать это дело
 
 
 async def get_all_questions(**filter_kwargs) -> list[QuestionThemeLesson | QuestionProject | QuestionAnother]:
 
     result = []
-
+    # TODO Как будто стоило сделать немного по другому, чтобы у таблицы Question было поле тип вопроса, которое бы тянулось из одной доп. таблицы,
+    # сейчас для расширения нам надо будет писать еще одну модель, в моем предложенном случае мы бы просто добавили еще одну запись в бд
     result.extend(await QuestionThemeLesson.filter(**filter_kwargs))
     result.extend(await QuestionProject.filter(**filter_kwargs))
     result.extend(await QuestionAnother.filter(**filter_kwargs))

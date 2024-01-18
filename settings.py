@@ -30,13 +30,13 @@ def get_settings() -> Settings | None:
 
         if not env_var_value:
 
-            logger.error(f'{env_var_name} environment variable not found, set it')
+            logger.error(f'{env_var_name} environment variable not found, set it') 
 
-            return
+            return # TODO Я бы вместо ретурна тут рэйзил ошибку что конфиг гавно, переделайте
 
-        else:
+        else: # TODO Вот тут else уже не нужен будет, так как на 35ой вы ретурнитесь из функции
 
-            if env_var_type is str:
+            if env_var_type is str: # TODO Пока не могу придумать как это лучше реализовать, но мне не нравится эта штука xD
                 pass
 
             elif env_var_type is int:
@@ -50,8 +50,10 @@ def get_settings() -> Settings | None:
 
                 logger.error(f'Unknown environment variable type found: {env_var_type}')
 
-                return
+                return # TODO Аналогично 35ой
 
         received_env_vars[env_var_name] = env_var_value
 
     return Settings(**received_env_vars)
+
+# TODO Оверол, очень хорошо сделано, я бы мб только еще ушел от конфига в пайтон файле к .cfg, но это уже потяжелее штука

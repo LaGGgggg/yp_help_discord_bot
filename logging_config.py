@@ -16,6 +16,7 @@ LOGGING_CONFIG = {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
+            # TODO Стоило мб добавить флаг DEBUG, в зависимости от которого мы бы логгировали в консоль/файл
         },
     },
     'loggers': {

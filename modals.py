@@ -2,7 +2,7 @@ from typing import Type, Callable, Any
 
 from discord import ui, Interaction, TextStyle, ForumChannel, Thread, Embed, ButtonStyle
 from discord.ext.commands import Bot
-from tortoise.transactions import atomic
+from tortoise.transactions import atomic # TODO Мне уже страшно сюда заглядывать, я тут транзакции вообще не ожидал найти (это похвала)
 from tortoise.exceptions import DoesNotExist
 from thefuzz.fuzz import partial_ratio
 
@@ -48,7 +48,7 @@ class QuestionBaseModal(ui.Modal):
 
             await question_model.get(**kwargs)
 
-            await interaction.response.send_message('Не удалось создать вопрос, такой же уже существует')
+            await interaction.response.send_message('Не удалось создать вопрос, такой же уже существует') # TODO ДА Я ДУШНИЛА но лучше написать "такой уже существует"
 
             return
 
@@ -64,7 +64,8 @@ class QuestionBaseModal(ui.Modal):
         await question.save(update_fields=('discord_channel_id',))
 
         await QuestionStatistics.create(discord_channel_id=question.discord_channel_id)
-
+        # TODO Вообще стоило разделить логику отправки сообщения и именно достать сообщение друг от друга. Если я вам сейчас скажу
+        # что короче новый план, делаем еще и тг-бота, вы схватитесь за голову, так как у вас дис-бот прибит гвоздями к логике самого приложения
         await interaction.response.send_message(
             f'Ваш вопрос успешно создан, ссылка на тему: {thread.jump_url}\n'
             'Вы можете отсылать сообщения в тему анонимно через бота'

@@ -13,7 +13,7 @@ class MainCog(CogBase):
 
         if not await self.check_is_private_channel(ctx):
             return
-
+        # TODO Насколько я помню, у либы есть декораторы для проверки прав, думаю их юзать было бы получше
         if not await self.check_is_superuser(ctx):
             return
 

@@ -56,9 +56,6 @@ def main() -> None:
 
     bot_settings = get_settings()
 
-    if not bot_settings:
-        return
-
     # Setting up and launching a bot:
 
     intents = Intents.default()

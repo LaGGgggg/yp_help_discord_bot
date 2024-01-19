@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from dotenv import load_dotenv
 
-from logging_config import get_logger
+from exceptions import IncorrectSettingsSetupError, IncorrectEnvVarSetupError
 
 
 @dataclass
@@ -16,9 +16,7 @@ class Settings:
     SUPERUSERS_IDS: list[int]
 
 
-def get_settings() -> Settings | None:
-
-    logger = get_logger(__name__)
+def get_settings() -> Settings:
 
     load_dotenv()
 
@@ -29,28 +27,20 @@ def get_settings() -> Settings | None:
         env_var_value = environ.get(env_var_name)
 
         if not env_var_value:
+            raise IncorrectEnvVarSetupError(f'{env_var_name} environment variable not found, set it')
 
-            logger.error(f'{env_var_name} environment variable not found, set it')
+        if env_var_type is str:
+            pass
 
-            return
+        elif env_var_type is int:
+            env_var_value = int(env_var_value)
+
+        # This works, "is" - not. list[int] == list[int] -> True; list[str] == list[int] -> False
+        elif env_var_type == list[int]:
+            env_var_value = [int(i) for i in env_var_value.split(',')]
 
         else:
-
-            if env_var_type is str:
-                pass
-
-            elif env_var_type is int:
-                env_var_value = int(env_var_value)
-
-            # This works, "is" - not. list[int] == list[int] -> True; list[str] == list[int] -> False
-            elif env_var_type == list[int]:
-                env_var_value = [int(i) for i in env_var_value.split(',')]
-
-            else:
-
-                logger.error(f'Unknown environment variable type found: {env_var_type}')
-
-                return
+            raise IncorrectSettingsSetupError(f'Unknown environment variable type found: {env_var_type}')
 
         received_env_vars[env_var_name] = env_var_value
 

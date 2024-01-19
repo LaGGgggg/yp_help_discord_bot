@@ -32,7 +32,10 @@ class QuestionCog(CogBase):
 
         await question.fetch_related('creator')
 
-        if not ctx.author.id == question.creator.discord_id or await self.check_is_superuser(ctx):
+        if ctx.author.id != question.creator.discord_id and not await self.check_is_superuser(ctx, False):
+
+            self.send_privileges_error_message(ctx)
+
             return
 
         if question.is_completed:

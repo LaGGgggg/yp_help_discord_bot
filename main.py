@@ -27,7 +27,7 @@ class CustomBot(Bot):
         for file_name in listdir(self.bot_settings.COGS_DIR_NAME):
 
             # skip all non-python files and supporting files (starts with "_")
-            if '.py' not in file_name or file_name[0] == '_':
+            if '.py' not in file_name or file_name.startswith('_'):
 
                 self.logger.info(f'Non-cog file found, skip it: "{file_name}"')
 
@@ -35,19 +35,13 @@ class CustomBot(Bot):
 
             self.logger.info(f'Start cog file adding: "{file_name}"')
 
-            try:
+            cog_module = import_module(f"{self.bot_settings.COGS_DIR_NAME}.{file_name.rsplit('.py', 1)[0]}")
 
-                cog_module = import_module(f"{self.bot_settings.COGS_DIR_NAME}.{file_name.rsplit('.py', 1)[0]}")
+            cog_class = await cog_module.get_cog()
 
-                cog_class = await cog_module.get_cog()
+            await self.add_cog(cog_class(self, get_logger, self.bot_settings))
 
-                await self.add_cog(cog_class(self, get_logger, self.bot_settings))
-
-            except Exception as e:
-                self.logger.error(f'An error occurred while cog adding: {e}')
-
-            else:
-                self.logger.info(f'Cog file adding completed successfully')
+            self.logger.info(f'Cog file adding completed successfully')
 
 
 def main() -> None:

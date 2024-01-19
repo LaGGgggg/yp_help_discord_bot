@@ -48,7 +48,7 @@ class QuestionBaseModal(ui.Modal):
 
             await question_model.get(**kwargs)
 
-            await interaction.response.send_message('Не удалось создать вопрос, такой же уже существует')
+            await interaction.response.send_message('Не удалось создать вопрос, такой уже существует')
 
             return
 

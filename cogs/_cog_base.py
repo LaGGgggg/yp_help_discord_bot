@@ -25,7 +25,7 @@ class CogBase(Cog):
 
         if not isinstance(ctx.channel, PrivateChannel):
 
-            await ctx.send('Убедитесь, что пишете боту в **личные** сообщения')
+            await ctx.reply('Убедитесь, что пишете боту в **личные** сообщения', ephemeral=True)
 
             return False
 

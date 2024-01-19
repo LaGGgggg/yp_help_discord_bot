@@ -26,13 +26,18 @@ class QuestionCog(CogBase):
 
         if not question:
 
-            await ctx.send('Вопрос не найден, убедитесь, что пишите эту команду в ветке с вопросом')
+            await ctx.reply('Вопрос не найден, убедитесь, что пишите эту команду в ветке с вопросом', ephemeral=True)
 
+            return
+
+        await question.fetch_related('creator')
+
+        if not ctx.author.id == question.creator.discord_id or await self.check_is_superuser(ctx):
             return
 
         if question.is_completed:
 
-            await ctx.send('Вопрос уже помечен как завершённый')
+            await ctx.reply('Вопрос уже помечен как завершённый', ephemeral=True)
 
             return
 
@@ -42,7 +47,10 @@ class QuestionCog(CogBase):
 
         await ctx.channel.edit(name=f'[РЕШЕНО] {ctx.channel.name}')
 
-        await ctx.send('Вопрос помечен как решённый')
+        success_message = 'Вопрос помечен как решённый'
+
+        await ctx.channel.send(success_message)
+        await ctx.reply(success_message, ephemeral=True)
 
     @hybrid_command(description='Отправляет анонимное сообщение')
     async def send_anonymous_message(self, ctx: Context) -> None:

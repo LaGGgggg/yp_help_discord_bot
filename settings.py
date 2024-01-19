@@ -14,6 +14,7 @@ class Settings:
     DB_URL: str
     COGS_DIR_NAME: str
     SUPERUSERS_IDS: list[int]
+    DEBUG: bool
 
 
 def get_settings() -> Settings:
@@ -34,6 +35,9 @@ def get_settings() -> Settings:
 
         elif env_var_type is int:
             env_var_value = int(env_var_value)
+
+        elif env_var_type is bool:
+            env_var_value = env_var_value.lower() == 'true'
 
         # This works, "is" - not. list[int] == list[int] -> True; list[str] == list[int] -> False
         elif env_var_type == list[int]:

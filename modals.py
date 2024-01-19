@@ -12,8 +12,8 @@ from models import (
     QuestionAnother,
     QuestionBase,
     QuestionStatistics,
-    get_user_model_by_discord_id,
 )
+from models_utils import get_user_model_by_discord_id
 from settings import Settings
 
 

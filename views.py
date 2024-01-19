@@ -3,9 +3,8 @@ from discord.ext.commands import Bot
 
 from modals import QuestionThemeLessonModal, QuestionProjectModal, QuestionAnotherModal, SendAnonymousMessageModal
 from settings import Settings
-from models import (
-    get_all_questions, get_user_model_by_discord_id, QuestionThemeLesson, QuestionProject, QuestionAnother
-)
+from models import QuestionThemeLesson, QuestionProject, QuestionAnother
+from models_utils import get_all_questions, get_user_model_by_discord_id
 
 
 class QuestionThemeMenuView(ui.View):

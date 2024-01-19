@@ -6,7 +6,8 @@ from discord.ext.commands.context import Context
 
 from cogs._cog_base import CogBase
 from views import QuestionThemeMenuView, SendAnonymousMessageView
-from models import get_question_by_discord_channel_id, get_all_questions, QuestionStatistics
+from models import QuestionStatistics
+from models_utils import get_question_by_discord_channel_id
 
 
 class QuestionCog(CogBase):

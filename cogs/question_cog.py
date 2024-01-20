@@ -1,12 +1,12 @@
 from typing import Type
 
 from discord.message import Message
-from discord.ext.commands import Cog, hybrid_command, command
+from discord.ext.commands import Cog, hybrid_command
 from discord.ext.commands.context import Context
 
 from cogs._cog_base import CogBase
 from views import QuestionThemeMenuView, SendAnonymousMessageView
-from models import get_question_by_discord_channel_id, get_all_questions, QuestionStatistics
+from models_utils import get_question_by_discord_channel_id
 
 
 class QuestionCog(CogBase):
@@ -26,13 +26,21 @@ class QuestionCog(CogBase):
 
         if not question:
 
-            await ctx.send('Вопрос не найден, убедитесь, что пишите эту команду в ветке с вопросом')
+            await ctx.reply('Вопрос не найден, убедитесь, что пишите эту команду в ветке с вопросом', ephemeral=True)
+
+            return
+
+        await question.fetch_related('creator')
+
+        if ctx.author.id != question.creator.discord_id and not await self.check_is_superuser(ctx, False):
+
+            await self.send_privileges_error_message(ctx)
 
             return
 
         if question.is_completed:
 
-            await ctx.send('Вопрос уже помечен как завершённый')
+            await ctx.reply('Вопрос уже помечен как завершённый', ephemeral=True)
 
             return
 
@@ -42,7 +50,10 @@ class QuestionCog(CogBase):
 
         await ctx.channel.edit(name=f'[РЕШЕНО] {ctx.channel.name}')
 
-        await ctx.send('Вопрос помечен как решённый')
+        success_message = 'Вопрос помечен как решённый'
+
+        await ctx.channel.send(success_message)
+        await ctx.reply(success_message, ephemeral=True)
 
     @hybrid_command(description='Отправляет анонимное сообщение')
     async def send_anonymous_message(self, ctx: Context) -> None:
@@ -55,43 +66,12 @@ class QuestionCog(CogBase):
         view_add_select_ui_result = await view.add_select_ui(ctx.author.id)
 
         if view_add_select_ui_result is not True:
+
             await ctx.send(view_add_select_ui_result)
 
-        else:
-            await ctx.send('Выбирайте вопрос и отправляйте сообщение', view=view)
-
-    @command(description='Просмотреть статистику бота')
-    async def get_bot_statistics(self, ctx: Context) -> None:
-
-        if not await self.check_is_private_channel(ctx):
             return
 
-        if not await self.check_is_superuser(ctx):
-            return
-
-        questions_statistics = await QuestionStatistics.filter(requests__gt=10).order_by('-requests')
-
-        if questions_statistics:
-
-            message = 'Вот список самых популярных (по запросам в боте) вопросов:\n'
-
-            for question_statistics in questions_statistics:
-
-                question = await get_question_by_discord_channel_id(question_statistics.discord_channel_id)
-
-                question_channel = self.bot.get_channel(question.discord_channel_id)
-
-                message += (
-                    f'{question_statistics.requests} - [{question.get_thread_name()}]({question_channel.jump_url})'
-                    f"  {question.pub_date.strftime('%d.%m.%y')}  ***{'' if question.is_completed else 'не'}решён***\n"
-                )
-
-            message += '*Число слева от вопроса - количество запросов'
-
-        else:
-            message = 'Не удалось найти подходящую статистику'
-
-        await ctx.send(message)
+        await ctx.send('Выбирайте вопрос и отправляйте сообщение', view=view)
 
     @Cog.listener()
     async def on_message(self, message: Message) -> None:

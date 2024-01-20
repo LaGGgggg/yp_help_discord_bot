@@ -25,20 +25,22 @@ class CogBase(Cog):
 
         if not isinstance(ctx.channel, PrivateChannel):
 
-            await ctx.send('Убедитесь, что пишете боту в **личные** сообщения')
+            await ctx.reply('Убедитесь, что пишете боту в **личные** сообщения', ephemeral=True)
 
             return False
 
-        else:
-            return True
+        return True
 
-    async def check_is_superuser(self, ctx: Context) -> bool:
+    @staticmethod
+    async def send_privileges_error_message(ctx: Context) -> None:
+        await ctx.reply('У вас нет прав для выполнения этой команды', ephemeral=True)
+
+    async def check_is_superuser(self, ctx: Context, is_send_error_message: bool = True) -> bool:
 
         if ctx.author.id in self.bot_settings.SUPERUSERS_IDS:
             return True
 
-        else:
+        if is_send_error_message:
+            await self.send_privileges_error_message(ctx)
 
-            await ctx.send('У вас нет прав для выполнения этой команды')
-
-            return False
+        return False

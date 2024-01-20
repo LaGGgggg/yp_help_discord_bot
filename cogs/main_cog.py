@@ -11,10 +11,7 @@ class MainCog(CogBase):
     @command()
     async def sync(self, ctx: Context) -> None:
 
-        if not await self.check_is_private_channel(ctx):
-            return
-
-        if not await self.check_is_superuser(ctx):
+        if not await self.check_is_private_channel(ctx) or not await self.check_is_superuser(ctx):
             return
 
         try:

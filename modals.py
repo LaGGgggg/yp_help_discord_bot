@@ -12,8 +12,8 @@ from models import (
     QuestionAnother,
     QuestionBase,
     QuestionStatistics,
-    get_user_model_by_discord_id,
 )
+from models_utils import get_user_model_by_discord_id
 from settings import Settings
 
 
@@ -48,7 +48,7 @@ class QuestionBaseModal(ui.Modal):
 
             await question_model.get(**kwargs)
 
-            await interaction.response.send_message('Не удалось создать вопрос, такой же уже существует')
+            await interaction.response.send_message('Не удалось создать вопрос, такой уже существует')
 
             return
 

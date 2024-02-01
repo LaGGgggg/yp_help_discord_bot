@@ -3,6 +3,8 @@ from typing import Type
 from tortoise.models import Model
 from tortoise import fields
 
+from models_utils import get_question_by_discord_channel_id
+
 
 class User(Model):
 

@@ -95,7 +95,7 @@ cd yp_help_discord_bot
 ```dotenv
 BOT_TOKEN=<your_bot_token>
 HELP_FORUM_CHANNEL_ID=<your_help_forum_channel_id>
-DB_URL=postgresql://<username>:<password>@postgres:5432/<database_name>
+DB_URL=postgres://<username>:<password>@postgres:5432/<database_name>
 COGS_DIR_NAME=cogs  # вы можете оставить значение по умолчанию
 SUPERUSERS_IDS=<your_superusers_ids>  # id следует разделять ",", например: "111,222" или "333"
 DEBUG=False

@@ -1,6 +1,8 @@
 from typing import Type
+from datetime import datetime, timedelta
 
 from tortoise.models import Model
+from tortoise.exceptions import DoesNotExist
 from tortoise import fields
 
 from models_utils import get_question_by_discord_channel_id
@@ -111,3 +113,37 @@ class QuestionStatistics(Model):
 
     class Meta:
         table = 'question_statistics'
+
+
+class UserRequests(Model):
+
+    id = fields.IntField(pk=True)
+    date = fields.DatetimeField(auto_now_add=True)
+    user = fields.ForeignKeyField('models.User', related_name='user_requests')
+    anonymous_messages_counter = fields.IntField(default=0)
+    questions_creations_counter = fields.IntField(default=0)
+    questions_searches_counter = fields.IntField(default=0)
+
+    def check_and_fix_date(self) -> None:
+        """
+        Checks the datetime of an object, if it is more than 24 hours, resets the counters and sets the datetime (now)
+        """
+
+        datetime_now = datetime.now()
+
+        if (self.date + timedelta(hours=24)).timestamp() <= datetime_now.timestamp():
+
+            self.date = datetime_now
+            self.anonymous_messages_counter = 0
+            self.questions_creations_counter = 0
+            self.questions_searches_counter = 0
+
+    def __str__(self) -> str:
+        return (
+            f'User requests: anonymous messages counter = {self.anonymous_messages_counter}, questions creations'
+            f' counter = {self.questions_creations_counter}, questions searches counter ='
+            f' {self.questions_searches_counter}'
+        )
+
+    class Meta:
+        table = 'user_requests'

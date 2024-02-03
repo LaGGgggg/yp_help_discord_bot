@@ -2,7 +2,7 @@ from typing import Type
 
 from tortoise.exceptions import DoesNotExist
 
-from models import User, QuestionBase, QuestionThemeLesson, QuestionProject, QuestionAnother
+from models import User, QuestionBase, QuestionThemeLesson, QuestionProject, QuestionAnother, UserRequests
 
 
 async def get_user_model_by_discord_id(discord_id: int) -> User:
@@ -33,3 +33,12 @@ async def get_all_questions(**filter_kwargs) -> list[QuestionThemeLesson | Quest
     result.extend(await QuestionAnother.filter(**filter_kwargs))
 
     return result
+
+
+async def get_user_requests_model_by_user(user: User) -> UserRequests:
+
+    try:
+        return await UserRequests.get(user=user)
+
+    except DoesNotExist:
+        return await UserRequests.create(user=user)

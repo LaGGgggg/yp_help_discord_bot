@@ -13,7 +13,7 @@ from models import (
     QuestionBase,
     QuestionStatistics,
 )
-from models_utils import get_user_model_by_discord_id
+from models_utils import get_user_model_by_discord_id, get_user_requests_model_by_user
 from settings import Settings
 
 
@@ -43,6 +43,16 @@ class QuestionBaseModal(ui.Modal):
 
         user = await get_user_model_by_discord_id(interaction.user.id)
 
+        user_requests = await get_user_requests_model_by_user(user)
+
+        user_requests.check_and_fix_date()
+
+        if user_requests.questions_creations_counter >= self.bot_settings.QUESTIONS_CREATIONS_DAY_LIMIT:
+
+            await interaction.response.send_message('Превышен лимит на создание вопросов, попробуйте позже')
+
+            return
+
         # uniqueness check
         try:
 
@@ -64,6 +74,10 @@ class QuestionBaseModal(ui.Modal):
         await question.save(update_fields=('discord_channel_id',))
 
         await QuestionStatistics.create(discord_channel_id=question.discord_channel_id)
+
+        user_requests.questions_creations_counter += 1
+
+        await user_requests.save(update_fields=('questions_creations_counter',))
 
         await interaction.response.send_message(
             f'Ваш вопрос успешно создан, ссылка на тему: {thread.jump_url}\n'
@@ -87,6 +101,16 @@ class QuestionBaseModal(ui.Modal):
         get_questions_function (async) must take a boolean argument (is_completed) that indicates whether the questions
         are complete and kwargs.
         """
+
+        user_requests = await get_user_requests_model_by_user(await get_user_model_by_discord_id(interaction.user.id))
+
+        user_requests.check_and_fix_date()
+
+        if user_requests.questions_searches_counter >= self.bot_settings.QUESTIONS_SEARCHES_DAY_LIMIT:
+
+            await interaction.response.send_message('Превышен лимит на поиск похожих вопросов, попробуйте позже')
+
+            return
 
         questions = await get_questions_function(is_completed=is_completed, **get_questions_kwargs)
 
@@ -113,6 +137,10 @@ class QuestionBaseModal(ui.Modal):
 
             else:
                 message += message_comment_template + 'создать новый вопрос'
+
+            user_requests.questions_searches_counter += 1
+
+            await user_requests.save(update_fields=('questions_searches_counter',))
 
         else:
             message = 'Не удалось найти похожие вопросы, вы можете создать новый'
@@ -285,8 +313,24 @@ class SendAnonymousMessageModal(ui.Modal, title='Отправить аноним
 
     async def on_submit(self, interaction: Interaction) -> None:
 
+        user_requests = await get_user_requests_model_by_user(await get_user_model_by_discord_id(interaction.user.id))
+
+        user_requests.check_and_fix_date()
+
+        if user_requests.anonymous_messages_counter >= self.bot_settings.ANONYMOUS_MESSAGES_DAY_LIMIT:
+
+            await interaction.response.send_message('Превышен лимит на анонимные сообщения, попробуйте позже')
+
+            await super().on_submit(interaction)
+
+            return
+
         sent_message = await self.target_thread.send(f'Автор вопроса написал:\n{self.message.value}')
 
         await interaction.response.send_message(f'[Сообщение]({sent_message.jump_url}) успешно отправлено')
+
+        user_requests.anonymous_messages_counter += 1
+
+        await user_requests.save(update_fields=('anonymous_messages_counter',))
 
         await super().on_submit(interaction)

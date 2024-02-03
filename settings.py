@@ -15,6 +15,9 @@ class Settings:
     COGS_DIR_NAME: str
     SUPERUSERS_IDS: list[int]
     DEBUG: bool
+    ANONYMOUS_MESSAGES_DAY_LIMIT: int
+    QUESTIONS_CREATIONS_DAY_LIMIT: int
+    QUESTIONS_SEARCHES_DAY_LIMIT: int
 
 
 def get_settings() -> Settings:

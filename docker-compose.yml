@@ -10,7 +10,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     env_file:
-      - ./API/core/.env
+      - .env
     expose:
       - 5432
 

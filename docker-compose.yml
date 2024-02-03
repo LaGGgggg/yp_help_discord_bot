@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+
+  postgres:
+    image: postgres:latest
+    restart: always
+    networks:
+      - backend
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    expose:
+      - 5432
+
+  bot:
+    build:
+      context: .
+    restart: always
+    networks:
+      - backend
+    depends_on:
+      - postgres
+    entrypoint: ["/bin/sh", "entrypoint.sh"]
+
+volumes:
+  postgres_data:
+
+networks:
+  backend:
+    driver: bridge

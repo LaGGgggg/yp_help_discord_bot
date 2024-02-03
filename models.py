@@ -7,7 +7,7 @@ from tortoise import fields
 class User(Model):
 
     id = fields.IntField(pk=True)
-    discord_id = fields.IntField(unique=True)
+    discord_id = fields.BigIntField(unique=True)
 
     def __str__(self) -> str:
         return f'Bot user (id: {self.id}, discord_id: {self.discord_id})'
@@ -25,7 +25,7 @@ class QuestionBase(Model):
     pub_date = fields.DatetimeField(auto_now_add=True)
     context = fields.TextField(null=True)
     is_completed = fields.BooleanField(default=False)
-    discord_channel_id = fields.IntField(null=True, index=True, unique=True)
+    discord_channel_id = fields.BigIntField(null=True, index=True, unique=True)
 
     def get_context_short(self) -> str:
 
@@ -98,7 +98,7 @@ class QuestionStatistics(Model):
 
     id = fields.IntField(pk=True)
     pub_date = fields.DatetimeField(auto_now_add=True)
-    discord_channel_id = fields.IntField(index=True, unique=True)
+    discord_channel_id = fields.BigIntField(index=True, unique=True)
     requests = fields.IntField(default=1)
 
     def __str__(self) -> str:

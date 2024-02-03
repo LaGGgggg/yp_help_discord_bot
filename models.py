@@ -1,11 +1,7 @@
-from typing import Type
 from datetime import datetime, timedelta
 
 from tortoise.models import Model
-from tortoise.exceptions import DoesNotExist
 from tortoise import fields
-
-from models_utils import get_question_by_discord_channel_id
 
 
 class User(Model):
@@ -104,9 +100,6 @@ class QuestionStatistics(Model):
     pub_date = fields.DatetimeField(auto_now_add=True)
     discord_channel_id = fields.IntField(index=True, unique=True)
     requests = fields.IntField(default=1)
-
-    async def get_question_object(self) -> Type[QuestionBase]:
-        return await get_question_by_discord_channel_id(self.discord_channel_id)
 
     def __str__(self) -> str:
         return f'Question statistics requests: {self.requests} discord_channel_id: {self.discord_channel_id}'

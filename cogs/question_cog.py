@@ -1,11 +1,12 @@
 from typing import Type
 
+from discord import Attachment
 from discord.message import Message
 from discord.ext.commands import Cog, hybrid_command
 from discord.ext.commands.context import Context
 
 from cogs._cog_base import CogBase
-from views import QuestionThemeMenuView, SendAnonymousMessageView
+from views import QuestionThemeMenuView, SendAnonymousMessageView, SendAnonymousImageView
 from models_utils import get_question_by_discord_channel_id
 
 
@@ -72,6 +73,36 @@ class QuestionCog(CogBase):
             return
 
         await ctx.send('Выбирайте вопрос и отправляйте сообщение', view=view)
+
+    @hybrid_command(description='Отправляет анонимное фото')
+    async def send_anonymous_photo(self, ctx: Context, image_file: Attachment) -> None:
+
+        if not await self.check_is_private_channel(ctx):
+            return
+
+        if not image_file:
+
+            await ctx.send('Прикрепите к этой команде изображение, которое хотите отослать')
+
+            return
+
+        if image_file.content_type not in ('image/jpeg', 'image/jpg', 'image/png'):
+
+            await ctx.send('Пожалуйста, прикрепите **изображение** в одном из форматов: jpeg, jpg, png')
+
+            return
+
+        view = SendAnonymousImageView(self.bot, self.bot_settings, image_file.url)
+
+        view_add_select_ui_result = await view.add_select_ui(ctx.author.id)
+
+        if view_add_select_ui_result is not True:
+
+            await ctx.send(view_add_select_ui_result)
+
+            return
+
+        await ctx.send('Выбирайте вопрос и отправляйте изображение', view=view)
 
     @Cog.listener()
     async def on_message(self, message: Message) -> None:

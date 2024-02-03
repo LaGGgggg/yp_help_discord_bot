@@ -73,6 +73,80 @@ QUESTIONS_SEARCHES_DAY_LIMIT - лимит на поиск похожих воп�
 python main.py
 ```
 
+# Продакшен настройка
+
+### 1. Установите [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+
+### 2. Установите [docker](https://docs.docker.com/engine/install/)
+
+### 3. Установите [docker compose plugin](https://docs.docker.com/compose/install/linux/)
+
+### 4. Клонируйте репозиторий
+
+```bash
+git clone https://github.com/LaGGgggg/yp_help_discord_bot.git
+cd yp_help_discord_bot
+```
+
+### 5. Установите переменные окружения (environment variables)
+
+Создайте файл `.env`, это должно выглядеть так: `yp_help_discord_bot/.env`. После скопируйте это в `.env`
+
+```dotenv
+BOT_TOKEN=<your_bot_token>
+HELP_FORUM_CHANNEL_ID=<your_help_forum_channel_id>
+DB_URL=postgresql://<username>:<password>@postgres:5432/<database_name>
+COGS_DIR_NAME=cogs  # вы можете оставить значение по умолчанию
+SUPERUSERS_IDS=<your_superusers_ids>  # id следует разделять ",", например: "111,222" или "333"
+DEBUG=False
+ANONYMOUS_MESSAGES_DAY_LIMIT=150
+QUESTIONS_CREATIONS_DAY_LIMIT=20
+QUESTIONS_SEARCHES_DAY_LIMIT=1000
+
+# docker-compose section
+POSTGRES_USER=<username>
+POSTGRES_PASSWORD=<password>
+POSTGRES_DB=<database_name>
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+PGDATA=/var/lib/postgresql/data/pgdata
+```
+_**Не забудьте поменять значения на свои! (поставьте его после "=")**_
+
+#### Больше о переменных:
+BOT_TOKEN - API токен дискорд бота.<br>
+HELP_FORUM_CHANNEL_ID - id канала-форума, где бот будет работать с вопросами
+(канал должен быть типа [ForumChannel](https://discordpy.readthedocs.io/en/stable/api.html?#forumchannel)).<br>
+DB_URL - обычный [url базы данных](https://tortoise.github.io/databases.html#db-url).<br>
+COGS_DIR_NAME - название директории, в которой находятся файлы с
+[cog-ами](https://discordpy.readthedocs.io/en/stable/ext/commands/cogs.html)
+(файлы с отличным от ".py" расширением и начинающиеся с "_" игнорируются).<br>
+SUPERUSERS_IDS - discord ids суперпользователей (пользователей бота с расширенными правами,
+каждый id отделяется от другого при помощи ",", например: "SUPERUSERS_IDS=111,222" или "SUPERUSERS_IDS=333").<br>
+DEBUG - "true" для True или любое другое значени для False, определяет тип логирования (в файл или в консоль).<br>
+ANONYMOUS_MESSAGES_DAY_LIMIT - лимит анонимных сообщений, которые может отослать пользователь в сутки.<br>
+QUESTIONS_CREATIONS_DAY_LIMIT - лимит на создание вопросов пользователем в сутки.<br>
+QUESTIONS_SEARCHES_DAY_LIMIT - лимит на поиск похожих вопросов пользователем в сутки.<br>
+
+POSTGRES_USER - [POSTGRES_USER](https://hub.docker.com/_/postgres) стандартная переменная окружения docker<br>
+POSTGRES_PASSWORD - [POSTGRES_PASSWORD](https://hub.docker.com/_/postgres) стандартная переменная окружения docker<br>
+POSTGRES_DB - [POSTGRES_DB](https://hub.docker.com/_/postgres) стандартная переменная окружения docker<br>
+POSTGRES_HOST - [POSTGRES_HOST](https://hub.docker.com/_/postgres) стандартная переменная окружения docker<br>
+POSTGRES_PORT - [POSTGRES_PORT](https://hub.docker.com/_/postgres) стандартная переменная окружения docker<br>
+PGDATA - [PGDATA](https://hub.docker.com/_/postgres) стандартная переменная окружения docker<br>
+
+### 6. Запустите docker compose
+
+```bash
+docker compose up -d
+```
+
+### 7. После успешного запуска проверьте сервер
+
+```bash
+docker compose logs -f
+```
+
 # Команды
 
 `/new_question` - создание нового вопроса, доступна всем пользователям в личных сообщениях с ботом.<br>

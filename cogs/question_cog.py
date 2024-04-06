@@ -119,6 +119,10 @@ class QuestionCog(CogBase):
 
             question_creator_user_id = channel_question.creator.discord_id
 
+            # don't respond to question creator
+            if message.author.id == question_creator_user_id:
+                return
+
             question_creator_user = self.bot.get_user(question_creator_user_id)
 
             if not question_creator_user:

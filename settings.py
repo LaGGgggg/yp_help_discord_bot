@@ -18,6 +18,8 @@ class Settings:
     ANONYMOUS_MESSAGES_DAY_LIMIT: int
     QUESTIONS_CREATIONS_DAY_LIMIT: int
     QUESTIONS_SEARCHES_DAY_LIMIT: int
+    DELETED_MESSAGES_LIMIT: int
+    DELETED_MESSAGES_PERIOD_HOURS: int
 
 
 def get_settings() -> Settings:

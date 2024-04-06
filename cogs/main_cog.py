@@ -11,6 +11,9 @@ class MainCog(CogBase):
     @command()
     async def sync(self, ctx: Context) -> None:
 
+        if await self.check_is_user_banned(ctx.author.id):
+            return
+
         if not await self.check_is_private_channel(ctx) or not await self.check_is_superuser(ctx):
             return
 

@@ -49,6 +49,8 @@ DEBUG=False
 ANONYMOUS_MESSAGES_DAY_LIMIT=150
 QUESTIONS_CREATIONS_DAY_LIMIT=20
 QUESTIONS_SEARCHES_DAY_LIMIT=1000
+DELETED_MESSAGES_LIMIT=5
+DELETED_MESSAGES_PERIOD_HOURS=48
 ```
 _**Не забудьте поменять значения на свои! (поставьте его после "=")**_
 
@@ -66,6 +68,8 @@ DEBUG - "true" для True или любое другое значени для 
 ANONYMOUS_MESSAGES_DAY_LIMIT - лимит анонимных сообщений, которые может отослать пользователь в сутки.<br>
 QUESTIONS_CREATIONS_DAY_LIMIT - лимит на создание вопросов пользователем в сутки.<br>
 QUESTIONS_SEARCHES_DAY_LIMIT - лимит на поиск похожих вопросов пользователем в сутки.<br>
+DELETED_MESSAGES_LIMIT - лимит на удалённые анонимные сообщения пользователя (после превышения пользователь блокируется).<br>
+DELETED_MESSAGES_PERIOD_HOURS - период, в течение которого не должен быть превышен лимит на удалённые сообщения.<br>
 
 ### 5. Запустите проект
 
@@ -102,6 +106,8 @@ DEBUG=False
 ANONYMOUS_MESSAGES_DAY_LIMIT=150
 QUESTIONS_CREATIONS_DAY_LIMIT=20
 QUESTIONS_SEARCHES_DAY_LIMIT=1000
+DELETED_MESSAGES_LIMIT=5
+DELETED_MESSAGES_PERIOD_HOURS=48
 
 # docker-compose section
 POSTGRES_USER=<username>
@@ -127,6 +133,8 @@ DEBUG - "true" для True или любое другое значени для 
 ANONYMOUS_MESSAGES_DAY_LIMIT - лимит анонимных сообщений, которые может отослать пользователь в сутки.<br>
 QUESTIONS_CREATIONS_DAY_LIMIT - лимит на создание вопросов пользователем в сутки.<br>
 QUESTIONS_SEARCHES_DAY_LIMIT - лимит на поиск похожих вопросов пользователем в сутки.<br>
+DELETED_MESSAGES_LIMIT - лимит на удалённые анонимные сообщения пользователя (после превышения пользователь блокируется).<br>
+DELETED_MESSAGES_PERIOD_HOURS - период, в течение которого не должен быть превышен лимит на удалённые сообщения.<br>
 
 POSTGRES_USER - [POSTGRES_USER](https://hub.docker.com/_/postgres) стандартная переменная окружения docker<br>
 POSTGRES_PASSWORD - [POSTGRES_PASSWORD](https://hub.docker.com/_/postgres) стандартная переменная окружения docker<br>

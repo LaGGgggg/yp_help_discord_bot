@@ -45,7 +45,7 @@ class QuestionBaseModal(ui.Modal):
 
         user_requests = await get_user_requests_model_by_user(user)
 
-        user_requests.check_and_fix_date()
+        await user_requests.check_and_fix_date()
 
         if user_requests.questions_creations_counter >= self.bot_settings.QUESTIONS_CREATIONS_DAY_LIMIT:
 
@@ -104,7 +104,7 @@ class QuestionBaseModal(ui.Modal):
 
         user_requests = await get_user_requests_model_by_user(await get_user_model_by_discord_id(interaction.user.id))
 
-        user_requests.check_and_fix_date()
+        await user_requests.check_and_fix_date()
 
         if user_requests.questions_searches_counter >= self.bot_settings.QUESTIONS_SEARCHES_DAY_LIMIT:
 
@@ -315,7 +315,7 @@ class SendAnonymousMessageModal(ui.Modal, title='Отправить аноним
 
         user_requests = await get_user_requests_model_by_user(await get_user_model_by_discord_id(interaction.user.id))
 
-        user_requests.check_and_fix_date()
+        await user_requests.check_and_fix_date()
 
         if user_requests.anonymous_messages_counter >= self.bot_settings.ANONYMOUS_MESSAGES_DAY_LIMIT:
 

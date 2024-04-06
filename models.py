@@ -117,7 +117,7 @@ class UserRequests(Model):
     questions_creations_counter = fields.IntField(default=0)
     questions_searches_counter = fields.IntField(default=0)
 
-    def check_and_fix_date(self) -> None:
+    async def check_and_fix_date(self) -> None:
         """
         Checks the datetime of an object, if it is more than 24 hours, resets the counters and sets the datetime (now)
         """
@@ -130,6 +130,8 @@ class UserRequests(Model):
             self.anonymous_messages_counter = 0
             self.questions_creations_counter = 0
             self.questions_searches_counter = 0
+
+            await self.save(update_fields=('is_completed',))
 
     def __str__(self) -> str:
         return (

@@ -123,7 +123,10 @@ class QuestionBaseModal(ui.Modal):
 
         if questions:
 
-            message = f"Вот список похожих {'' if is_completed else 'не'}решённых вопросов:\n"
+            message = (
+                f"Для начала, пожалуйста, ознакомьтесь с уже существующими вопросами, возможно, вы найдёте ответ.\n"
+                f"Вот список похожих {'' if is_completed else 'не'}решённых вопросов:\n"
+            )
 
             for question in questions:
 
@@ -150,7 +153,10 @@ class QuestionBaseModal(ui.Modal):
             await user_requests.save(update_fields=('questions_searches_counter',))
 
         else:
-            message = 'Не удалось найти похожие вопросы, вы можете создать новый'
+            message = (
+                'Не удалось найти похожие вопросы, вы можете создать новый\n(Обычно пользователям сначала предлагается'
+                ' посмотреть уже существующие схожие вопросы)'
+            )
 
         embed_message = Embed(description=message)
 

@@ -84,6 +84,13 @@ class QuestionBaseModal(ui.Modal):
             'Вы можете отсылать сообщения в тему анонимно через бота'
         )
 
+        await interaction.followup.edit_message(
+            interaction.message.id,
+            content='Вопрос успешно создан',
+            view=None,
+            embed=None,
+        )
+
     async def process_user_question(
             self,
             interaction: Interaction,

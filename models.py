@@ -164,7 +164,7 @@ class UserRequests(Model):
             self.questions_creations_counter = 0
             self.questions_searches_counter = 0
 
-            await self.save(update_fields=('is_completed',))
+            await self.save()
 
     def __str__(self) -> str:
         return (

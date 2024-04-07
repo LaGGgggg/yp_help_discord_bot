@@ -45,7 +45,7 @@ class QuestionBaseModal(ui.Modal):
 
         user_requests = await get_user_requests_model_by_user(user)
 
-        user_requests.check_and_fix_date()
+        await user_requests.check_and_fix_date()
 
         if user_requests.questions_creations_counter >= self.bot_settings.QUESTIONS_CREATIONS_DAY_LIMIT:
 
@@ -84,6 +84,13 @@ class QuestionBaseModal(ui.Modal):
             'Вы можете отсылать сообщения в тему анонимно через бота'
         )
 
+        await interaction.followup.edit_message(
+            interaction.message.id,
+            content='Вопрос успешно создан',
+            view=None,
+            embed=None,
+        )
+
     async def process_user_question(
             self,
             interaction: Interaction,
@@ -104,7 +111,7 @@ class QuestionBaseModal(ui.Modal):
 
         user_requests = await get_user_requests_model_by_user(await get_user_model_by_discord_id(interaction.user.id))
 
-        user_requests.check_and_fix_date()
+        await user_requests.check_and_fix_date()
 
         if user_requests.questions_searches_counter >= self.bot_settings.QUESTIONS_SEARCHES_DAY_LIMIT:
 
@@ -116,7 +123,10 @@ class QuestionBaseModal(ui.Modal):
 
         if questions:
 
-            message = f"Вот список похожих {'' if is_completed else 'не'}решённых вопросов:\n"
+            message = (
+                f"Для начала, пожалуйста, ознакомьтесь с уже существующими вопросами, возможно, вы найдёте ответ.\n"
+                f"Вот список похожих {'' if is_completed else 'не'}решённых вопросов:\n"
+            )
 
             for question in questions:
 
@@ -143,7 +153,10 @@ class QuestionBaseModal(ui.Modal):
             await user_requests.save(update_fields=('questions_searches_counter',))
 
         else:
-            message = 'Не удалось найти похожие вопросы, вы можете создать новый'
+            message = (
+                'Не удалось найти похожие вопросы, вы можете создать новый\n(Обычно пользователям сначала предлагается'
+                ' посмотреть уже существующие схожие вопросы)'
+            )
 
         embed_message = Embed(description=message)
 
@@ -315,7 +328,7 @@ class SendAnonymousMessageModal(ui.Modal, title='Отправить аноним
 
         user_requests = await get_user_requests_model_by_user(await get_user_model_by_discord_id(interaction.user.id))
 
-        user_requests.check_and_fix_date()
+        await user_requests.check_and_fix_date()
 
         if user_requests.anonymous_messages_counter >= self.bot_settings.ANONYMOUS_MESSAGES_DAY_LIMIT:
 

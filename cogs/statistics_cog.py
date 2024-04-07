@@ -12,6 +12,9 @@ class StatisticsCog(CogBase):
     @command(description='Просмотреть статистику бота')
     async def get_bot_statistics(self, ctx: Context) -> None:
 
+        if await self.check_is_user_banned(ctx.author.id):
+            return
+
         if not await self.check_is_private_channel(ctx):
             return
 

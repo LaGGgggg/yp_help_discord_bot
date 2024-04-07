@@ -6,6 +6,7 @@ from discord.ext.commands import Cog
 from discord.ext.commands.context import Context
 
 from settings import Settings
+from models_utils import get_user_model_by_discord_id
 
 
 class CogBase(Cog):
@@ -44,3 +45,10 @@ class CogBase(Cog):
             await self.send_privileges_error_message(ctx)
 
         return False
+
+    @staticmethod
+    async def check_is_user_banned(author_id: int) -> bool:
+
+        user = await get_user_model_by_discord_id(author_id)
+
+        return user.is_banned

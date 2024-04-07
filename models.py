@@ -3,11 +3,44 @@ from datetime import datetime, timedelta
 from tortoise.models import Model
 from tortoise import fields
 
+from settings import get_settings
+
+SETTINGS = get_settings()
+
 
 class User(Model):
 
     id = fields.IntField(pk=True)
     discord_id = fields.BigIntField(unique=True)
+    messages_deleted = fields.SmallIntField(default=0)
+    last_deleted_message_date = fields.DatetimeField(auto_now_add=True)
+    is_banned = fields.BooleanField(default=False)
+
+    async def add_messages_deleted(self, value: int = 1) -> None:
+
+        if (
+                (self.last_deleted_message_date + timedelta(hours=SETTINGS.DELETED_MESSAGES_PERIOD_HOURS)).timestamp() <
+                datetime.now().timestamp()
+        ):
+            self.messages_deleted = 0
+
+        self.last_deleted_message_date = datetime.now()
+        self.messages_deleted += value
+
+        await self.save()
+
+    async def get_actual_user_is_banned_status(self) -> bool:
+
+        if (
+                (self.last_deleted_message_date + timedelta(hours=SETTINGS.DELETED_MESSAGES_PERIOD_HOURS)).timestamp()
+                >= datetime.now().timestamp() and self.messages_deleted >= SETTINGS.DELETED_MESSAGES_LIMIT
+        ):
+
+            self.is_banned = True
+
+            await self.save()
+
+        return self.is_banned
 
     def __str__(self) -> str:
         return f'Bot user (id: {self.id}, discord_id: {self.discord_id})'
@@ -117,7 +150,7 @@ class UserRequests(Model):
     questions_creations_counter = fields.IntField(default=0)
     questions_searches_counter = fields.IntField(default=0)
 
-    def check_and_fix_date(self) -> None:
+    async def check_and_fix_date(self) -> None:
         """
         Checks the datetime of an object, if it is more than 24 hours, resets the counters and sets the datetime (now)
         """
@@ -130,6 +163,8 @@ class UserRequests(Model):
             self.anonymous_messages_counter = 0
             self.questions_creations_counter = 0
             self.questions_searches_counter = 0
+
+            await self.save()
 
     def __str__(self) -> str:
         return (

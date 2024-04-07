@@ -78,7 +78,7 @@ class QuestionThemeMenuView(ui.View):
 
         await interaction.followup.edit_message(
             interaction.message.id,
-            content=f'Выбран тип: {selected_value_formatted}',
+            content=f'Выбран тип вопроса: {selected_value_formatted}',
             view=None,
         )
 
@@ -209,7 +209,7 @@ class SendAnonymousImageView(ui.View):
 
         user_requests = await get_user_requests_model_by_user(await get_user_model_by_discord_id(interaction.user.id))
 
-        user_requests.check_and_fix_date()
+        await user_requests.check_and_fix_date()
 
         if user_requests.anonymous_messages_counter >= self.bot_settings.ANONYMOUS_MESSAGES_DAY_LIMIT:
 

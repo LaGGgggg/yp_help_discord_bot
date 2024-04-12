@@ -20,6 +20,7 @@ class Settings:
     QUESTIONS_SEARCHES_DAY_LIMIT: int
     DELETED_MESSAGES_LIMIT: int
     DELETED_MESSAGES_PERIOD_HOURS: int
+    ADMIN_ROLES: list[str]
 
 
 def get_settings() -> Settings:
@@ -47,6 +48,9 @@ def get_settings() -> Settings:
         # This works, "is" - not. list[int] == list[int] -> True; list[str] == list[int] -> False
         elif env_var_type == list[int]:
             env_var_value = [int(i) for i in env_var_value.split(',')]
+
+        elif env_var_type == list[str]:
+            env_var_value = env_var_value.split(',')
 
         else:
             raise IncorrectSettingsSetupError(f'Unknown environment variable type found: {env_var_type}')

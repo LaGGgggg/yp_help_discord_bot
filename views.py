@@ -4,7 +4,9 @@ from discord.ext.commands import Bot
 from modals import QuestionThemeLessonModal, QuestionProjectModal, QuestionAnotherModal, SendAnonymousMessageModal
 from settings import Settings
 from models import QuestionThemeLesson, QuestionProject, QuestionAnother
-from models_utils import get_all_questions, get_user_model_by_discord_id, get_user_requests_model_by_user
+from models_utils import (
+    get_all_questions, get_user_model_by_discord_id, get_user_requests_model_by_user, get_question_by_discord_channel_id
+)
 
 
 class QuestionThemeMenuView(ui.View):
@@ -78,7 +80,7 @@ class QuestionThemeMenuView(ui.View):
 
         await interaction.followup.edit_message(
             interaction.message.id,
-            content=f'Выбран тип вопроса: {selected_value_formatted}',
+            content=f'Выбрана тема вопроса: {selected_value_formatted}',
             view=None,
         )
 
@@ -250,6 +252,118 @@ class SendAnonymousImageView(ui.View):
 
         self.question_select = ui.Select(
             placeholder='Выберите вопрос, в который хотите отправить изображение',
+            min_values=1,
+            max_values=1,
+            options=select_options,
+        )
+
+        self.question_select.callback = self.select_callback
+
+        self.add_item(self.question_select)
+
+        return True
+
+
+class CompleteQuestionView(ui.View):
+
+    def __init__(self, bot: Bot, bot_settings: Settings):
+
+        self.bot = bot
+        self.bot_settings = bot_settings
+        self.question_select = None
+
+        super().__init__()
+
+    async def select_callback(self, interaction: Interaction) -> None:
+
+        target_question_type, target_question_id = self.question_select.values[0].split('&')
+
+        await interaction.response.defer()
+
+        if target_question_type == QuestionThemeLesson.QUESTION_TYPE:
+            target_question = await QuestionThemeLesson.get(id=target_question_id)
+
+        elif target_question_type == QuestionProject.QUESTION_TYPE:
+            target_question = await QuestionProject.get(id=target_question_id)
+
+        elif target_question_type == QuestionAnother.QUESTION_TYPE:
+            target_question = await QuestionAnother.get(id=target_question_id)
+
+        else:
+
+            await interaction.followup.send(
+                'Произошла ошибка, пожалуйста, попробуйте ещё раз или свяжитесь с поддержкой'
+            )
+
+            return
+
+        if not target_question:
+
+            await interaction.followup.send(
+                'Не могу найти вопрос. Попробуйте открыть вопрос, который вы хотите отметить решённым, в'
+                ' коворкинге и вызовите команду в комментариях в ветке ещё раз.',
+            )
+
+            return
+
+        await target_question.fetch_related('creator')
+
+        if interaction.user.id != target_question.creator.discord_id:
+
+            await interaction.followup.send('У вас нет прав для выполнения этой команды')
+
+            return
+
+        if target_question.is_completed:
+
+            await interaction.followup.send('Вопрос уже помечен как завершённый')
+
+            return
+
+        target_question.is_completed = True
+
+        await target_question.save(update_fields=('is_completed',))
+
+        target_thread: Thread = self.bot.get_channel(target_question.discord_channel_id)
+
+        await target_thread.edit(name=f'[РЕШЕНО] {target_thread.name}')
+
+        success_message = 'Вопрос помечен как решённый'
+
+        await target_thread.send(success_message)
+        await interaction.followup.send(success_message)
+
+        await interaction.followup.edit_message(
+            interaction.message.id,
+            content=f'Выбрано завершение вопроса: {target_thread.jump_url}',
+            view=None,
+        )
+
+    async def add_select_ui(self, user_discord_id: int) -> bool | str:
+        """
+        :return: True if success, else error message
+        """
+
+        user_question_choices = await get_all_questions(
+            creator=await get_user_model_by_discord_id(user_discord_id), is_completed=False
+        )
+
+        if not user_question_choices:
+            return 'Не удалось получить незавершённые вопросы'
+
+        select_options = []
+
+        for question in user_question_choices:
+            select_options.append(
+                SelectOption(
+                    label=question.get_thread_name(),
+                    description=question.get_context_short(),
+                    value=f'{question.QUESTION_TYPE}&{question.id}',
+                )
+            )
+
+        self.question_select = ui.Select(
+            placeholder='Выберите вопрос, который хотите завершить',
             min_values=1,
             max_values=1,
             options=select_options,

@@ -4,9 +4,10 @@ from discord import Attachment
 from discord.message import Message
 from discord.ext.commands import Cog, hybrid_command
 from discord.ext.commands.context import Context
+from discord.abc import PrivateChannel
 
 from cogs._cog_base import CogBase
-from views import QuestionThemeMenuView, SendAnonymousMessageView, SendAnonymousImageView
+from views import QuestionThemeMenuView, SendAnonymousMessageView, SendAnonymousImageView, CompleteQuestionView
 from models_utils import get_question_by_discord_channel_id
 from models import User
 
@@ -22,7 +23,9 @@ class QuestionCog(CogBase):
         if not await self.check_is_private_channel(ctx):
             return
 
-        await ctx.send('Выберите тип вопроса', view=QuestionThemeMenuView(self.bot, self.bot_settings))
+        await ctx.send(
+            'Выберите, по какой теме вы хотите задать вопрос', view=QuestionThemeMenuView(self.bot, self.bot_settings)
+        )
 
     @hybrid_command(description='Отмечает текущий вопрос как решённый')
     async def complete_current_question(self, ctx: Context) -> None:
@@ -30,17 +33,39 @@ class QuestionCog(CogBase):
         if await self.check_is_user_banned(ctx.author.id):
             return
 
+        if isinstance(ctx.channel, PrivateChannel):
+
+            view = CompleteQuestionView(self.bot, self.bot_settings)
+
+            view_add_select_ui_result = await view.add_select_ui(ctx.author.id)
+
+            if view_add_select_ui_result is not True:
+
+                await ctx.send(view_add_select_ui_result)
+
+                return
+
+            await ctx.send('Выберите вопрос, который необходимо пометить как завершённый.', view=view)
+
+            return
+
         question = await get_question_by_discord_channel_id(ctx.channel.id)
 
         if not question:
 
-            await ctx.reply('Вопрос не найден, убедитесь, что пишите эту команду в ветке с вопросом', ephemeral=True)
+            await ctx.reply(
+                'Не могу найти вопрос. Попробуйте открыть вопрос, который вы хотите отметить решённым, в'
+                ' коворкинге и вызовите команду в комментариях в ветке ещё раз.',
+                ephemeral=True,
+            )
 
             return
 
         await question.fetch_related('creator')
 
-        if ctx.author.id != question.creator.discord_id and not await self.check_is_superuser(ctx, False):
+        if ctx.author.id != question.creator.discord_id and not await self.check_is_superuser(ctx, False) and not any([
+            role in self.bot_settings.ADMIN_ROLES for role in ctx.author.roles
+        ]):
 
             await self.send_privileges_error_message(ctx)
 
@@ -82,7 +107,7 @@ class QuestionCog(CogBase):
 
             return
 
-        await ctx.send('Выбирайте вопрос и отправляйте сообщение', view=view)
+        await ctx.send('Выберите вопрос, к которому нужно отправить комментарий.', view=view)
 
     @hybrid_command(description='Отправляет анонимное фото')
     async def send_anonymous_photo(self, ctx: Context, image_file: Attachment) -> None:
@@ -115,7 +140,7 @@ class QuestionCog(CogBase):
 
             return
 
-        await ctx.send('Выбирайте вопрос и отправляйте изображение', view=view)
+        await ctx.send('Выберите вопрос, к которому нужно отправить изображение.', view=view)
 
     @Cog.listener()
     async def on_message(self, message: Message) -> None:

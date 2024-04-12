@@ -80,8 +80,9 @@ class QuestionBaseModal(ui.Modal):
         await user_requests.save(update_fields=('questions_creations_counter',))
 
         await interaction.response.send_message(
-            f'Ваш вопрос успешно создан, ссылка на тему: {thread.jump_url}\n'
-            'Вы можете отсылать сообщения в тему анонимно через бота'
+            f'Ваш вопрос уже в коворкинге, ссылка на него: {thread.jump_url}. Когда кто-то на него ответит, вы получите'
+            ' уведомление.\nЕсли вам захочется ещё пояснить свой вопрос, можно отправить анонимное сообщение или'
+            ' скриншот с помощью команд бота.'
         )
 
         await interaction.followup.edit_message(
@@ -154,8 +155,8 @@ class QuestionBaseModal(ui.Modal):
 
         else:
             message = (
-                'Не удалось найти похожие вопросы, вы можете создать новый\n(Обычно пользователям сначала предлагается'
-                ' посмотреть уже существующие схожие вопросы)'
+                'Упс! Кажется, ответа на ваш вопрос в коворкинге нет. Хотите создать новый вопрос анонимно?'
+                ' Жмите на кнопку ниже'
             )
 
         embed_message = Embed(description=message)

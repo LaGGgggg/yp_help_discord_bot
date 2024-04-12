@@ -4,9 +4,10 @@ from discord import Attachment
 from discord.message import Message
 from discord.ext.commands import Cog, hybrid_command
 from discord.ext.commands.context import Context
+from discord.abc import PrivateChannel
 
 from cogs._cog_base import CogBase
-from views import QuestionThemeMenuView, SendAnonymousMessageView, SendAnonymousImageView
+from views import QuestionThemeMenuView, SendAnonymousMessageView, SendAnonymousImageView, CompleteQuestionView
 from models_utils import get_question_by_discord_channel_id
 from models import User
 
@@ -30,6 +31,22 @@ class QuestionCog(CogBase):
     async def complete_current_question(self, ctx: Context) -> None:
 
         if await self.check_is_user_banned(ctx.author.id):
+            return
+
+        if isinstance(ctx.channel, PrivateChannel):
+
+            view = CompleteQuestionView(self.bot, self.bot_settings)
+
+            view_add_select_ui_result = await view.add_select_ui(ctx.author.id)
+
+            if view_add_select_ui_result is not True:
+
+                await ctx.send(view_add_select_ui_result)
+
+                return
+
+            await ctx.send('Выберите вопрос, который необходимо пометить как завершённый.', view=view)
+
             return
 
         question = await get_question_by_discord_channel_id(ctx.channel.id)

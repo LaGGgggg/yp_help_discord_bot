@@ -63,7 +63,9 @@ class QuestionCog(CogBase):
 
         await question.fetch_related('creator')
 
-        if ctx.author.id != question.creator.discord_id and not await self.check_is_superuser(ctx, False):
+        if ctx.author.id != question.creator.discord_id and not await self.check_is_superuser(ctx, False) and not any([
+            role in self.bot_settings.ADMIN_ROLES for role in ctx.author.roles
+        ]):
 
             await self.send_privileges_error_message(ctx)
 

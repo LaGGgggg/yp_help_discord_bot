@@ -22,7 +22,9 @@ class QuestionCog(CogBase):
         if not await self.check_is_private_channel(ctx):
             return
 
-        await ctx.send('Выберите тип вопроса', view=QuestionThemeMenuView(self.bot, self.bot_settings))
+        await ctx.send(
+            'Выберите, по какой теме вы хотите задать вопрос', view=QuestionThemeMenuView(self.bot, self.bot_settings)
+        )
 
     @hybrid_command(description='Отмечает текущий вопрос как решённый')
     async def complete_current_question(self, ctx: Context) -> None:
@@ -34,7 +36,11 @@ class QuestionCog(CogBase):
 
         if not question:
 
-            await ctx.reply('Вопрос не найден, убедитесь, что пишите эту команду в ветке с вопросом', ephemeral=True)
+            await ctx.reply(
+                'Не могу найти вопрос. Попробуйте открыть вопрос, который вы хотите отметить решённым, в'
+                ' коворкинге и вызовите команду в комментариях в ветке ещё раз.',
+                ephemeral=True,
+            )
 
             return
 
@@ -82,7 +88,7 @@ class QuestionCog(CogBase):
 
             return
 
-        await ctx.send('Выбирайте вопрос и отправляйте сообщение', view=view)
+        await ctx.send('Выберите вопрос, к которому нужно отправить комментарий.', view=view)
 
     @hybrid_command(description='Отправляет анонимное фото')
     async def send_anonymous_photo(self, ctx: Context, image_file: Attachment) -> None:
@@ -115,7 +121,7 @@ class QuestionCog(CogBase):
 
             return
 
-        await ctx.send('Выбирайте вопрос и отправляйте изображение', view=view)
+        await ctx.send('Выберите вопрос, к которому нужно отправить изображение.', view=view)
 
     @Cog.listener()
     async def on_message(self, message: Message) -> None:

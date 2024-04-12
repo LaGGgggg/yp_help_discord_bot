@@ -78,7 +78,7 @@ class QuestionThemeMenuView(ui.View):
 
         await interaction.followup.edit_message(
             interaction.message.id,
-            content=f'Выбран тип вопроса: {selected_value_formatted}',
+            content=f'Выбрана тема вопроса: {selected_value_formatted}',
             view=None,
         )
 

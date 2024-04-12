@@ -55,7 +55,7 @@ def main() -> None:
     intents = Intents.default()
     intents.message_content = True
 
-    bot = CustomBot(bot_settings=bot_settings, command_prefix='/', intents=intents)
+    bot = CustomBot(bot_settings=bot_settings, command_prefix='/', intents=intents, help_command=None)
 
     bot.run(bot_settings.BOT_TOKEN)
 

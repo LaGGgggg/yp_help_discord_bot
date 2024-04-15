@@ -42,6 +42,9 @@ class MainCog(CogBase):
         if await self.check_is_user_banned(ctx.author.id):
             return
 
+        if not await self.check_is_private_channel(ctx):
+            return
+
         help_message = (
             'Привет! Я бот, который поможет вам быстро найти ответ на вопрос по учёбе.'
             ' Меня создал на мастерской проектов ваш однокурсник Никита.\n'

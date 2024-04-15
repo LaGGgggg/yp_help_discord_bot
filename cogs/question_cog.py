@@ -183,6 +183,9 @@ class QuestionCog(CogBase):
 
         channel_question = await get_question_by_discord_channel_id(message.channel.id)
 
+        if not channel_question:
+            return
+
         await channel_question.fetch_related('creator')
 
         question_creator_user_id = channel_question.creator.discord_id

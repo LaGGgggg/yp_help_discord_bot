@@ -2,6 +2,9 @@
 ![GitHub watchers](https://img.shields.io/github/watchers/LaGGgggg/yp_help_discord_bot?style=flat)
 ![GitHub last commit](https://img.shields.io/github/last-commit/LaGGgggg/yp_help_discord_bot)
 
+> [!WARNING]
+> Этот репозиторий **заархивирован** и более не поддерживается
+
 # Дискорд бот для помощи в решении проблем студентам Яндекс практикума
 
 # Как запустить проект?
